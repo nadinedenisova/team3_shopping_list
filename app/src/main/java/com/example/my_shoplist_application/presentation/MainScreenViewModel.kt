@@ -31,7 +31,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
             is MainScreenEvent.OnDeleteShopListClick -> {
                 viewModelScope.launch {
                     _action.update {
-                        MainScreenAction.ShowConfirmation
+                        MainScreenAction.ShowDeletingShoplistConfirmation
                     }
                 }
                 // viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
@@ -59,6 +59,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
             is MainScreenEvent.OnShopListClick -> {
                 // навигация на экран редактирования списка покупок
             }
+
         }
     }
 }
