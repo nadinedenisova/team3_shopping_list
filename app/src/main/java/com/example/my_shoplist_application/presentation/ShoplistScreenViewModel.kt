@@ -1,11 +1,14 @@
 package com.example.my_shoplist_application.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.my_shoplist_application.domain.api.ShoplistScreenInteractor
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenEvent
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScreenInteractor) :
     ViewModel() {
@@ -28,7 +31,15 @@ class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScre
             is ShoplistScreenEvent.OnPlusIngridientQuantityClick -> TODO()
             is ShoplistScreenEvent.OnReadyIngridientBtnClick -> TODO()
             is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO()
-            is ShoplistScreenEvent.OnSaveShoplistBtnClick -> TODO()
+
+            is ShoplistScreenEvent.OnSaveShoplistBtnClick -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    shoplistScreenInteractor.createShoplist(
+                        event.shoplist
+                    )
+                }
+            }
+
             is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO()
         }
     }
