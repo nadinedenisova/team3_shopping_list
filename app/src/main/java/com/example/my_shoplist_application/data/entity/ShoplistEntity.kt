@@ -10,5 +10,6 @@ data class ShoplistEntity(
     val shoplistId: Int,
     val shoplistName: String,
     val addedAt: String,
-    val ingridientsList: MutableList<Ingridients>
+    val ingridientsList: MutableList<Ingridients>,
+    var isPinned: Boolean
 )
