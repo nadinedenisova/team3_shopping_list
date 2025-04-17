@@ -12,7 +12,7 @@ interface IngridientsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertIngridient(ingridient: IngridientEntity)
 
-    @Query("SELECT * FROM track_table ORDER BY addedAt DESC")
+    @Query("SELECT * FROM ingridient_table")
     suspend fun getIngridients(): List<IngridientEntity>
 
 }

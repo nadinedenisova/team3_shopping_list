@@ -55,6 +55,10 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                     )
                 }
             }
+
+            is MainScreenEvent.OnShopListClick -> {
+                // навигация на экран редактирования списка покупок
+            }
         }
     }
 }

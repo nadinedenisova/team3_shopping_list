@@ -6,4 +6,5 @@ sealed interface MainScreenEvent {
     class OnDeleteShopListClick(val shoplistId: Int) : MainScreenEvent
     class OnRenameShopListClick(val shoplistId: Int) : MainScreenEvent
     class OnDoubleShopListClick(val shoplistId: Int) : MainScreenEvent
+    class OnShopListClick(val shoplistId: Int) : MainScreenEvent
 }

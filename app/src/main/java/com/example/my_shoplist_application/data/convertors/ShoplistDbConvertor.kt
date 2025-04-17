@@ -10,7 +10,8 @@ class ShoplistDbConvertor {
             shoplist.id,
             shoplist.shoplistName,
             System.currentTimeMillis().toString(),
-            shoplist.ingridientsList
+            shoplist.ingridientsList,
+            shoplist.isPinned
         )
     }
 
@@ -18,7 +19,8 @@ class ShoplistDbConvertor {
         return Shoplist(
             shoplist.shoplistId,
             shoplist.shoplistName,
-            shoplist.ingridientsList
+            shoplist.ingridientsList,
+            shoplist.isPinned
         )
     }
 }

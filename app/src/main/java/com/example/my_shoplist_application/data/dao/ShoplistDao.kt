@@ -30,7 +30,7 @@ interface ShoplistDao {
     suspend fun getShoplists(): List<ShoplistEntity>
 
     @Query("DELETE FROM shoplist_table WHERE shoplistId = :shoplistId")
-    fun deleteShoplist(playlistId: Int)
+    fun deleteShoplist(shoplistId: Int)
 
     @Query("SELECT * FROM shoplist_table WHERE shoplistId = :shoplistId")
     suspend fun getShoplistById(shoplistId: Int): ShoplistEntity
