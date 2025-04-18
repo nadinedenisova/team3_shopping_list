@@ -20,11 +20,17 @@ interface ShoplistDao {
         ingridientsList: MutableList<Ingridients>
     )
 
+    @Query("UPDATE shoplist_table SET shoplistName = :shoplistName WHERE shoplistId = :shoplistId")
+    suspend fun renameShoplist(
+        shoplistId: Int,
+        shoplistName: String
+    )
+
     @Query("SELECT * FROM shoplist_table ORDER BY addedAt DESC")
     suspend fun getShoplists(): List<ShoplistEntity>
 
     @Query("DELETE FROM shoplist_table WHERE shoplistId = :shoplistId")
-    fun deleteShoplist(playlistId: Int)
+    fun deleteShoplist(shoplistId: Int)
 
     @Query("SELECT * FROM shoplist_table WHERE shoplistId = :shoplistId")
     suspend fun getShoplistById(shoplistId: Int): ShoplistEntity
