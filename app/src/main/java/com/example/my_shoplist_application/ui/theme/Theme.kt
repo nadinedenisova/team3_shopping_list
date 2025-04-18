@@ -3,22 +3,22 @@ package com.example.my_shoplist_application.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40
 
@@ -33,6 +33,18 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+val LocalTypography = staticCompositionLocalOf<CustomTypography> {
+    error("No Typography provided")
+}
+
+val LocalCustomColor = staticCompositionLocalOf<CustomColor> {
+    error("No Typography provided")
+//    CustomColor(
+//        blueColor = Blue,
+//        textColor = Black
+//    )
+}
+
 @Composable
 fun My_ShopList_ApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -46,13 +58,21 @@ fun My_ShopList_ApplicationTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> DarkCustomColor
+        else -> LightCustomColor
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val customColors = if (darkTheme) DarkCustomColor else LightCustomColor
+
+    CompositionLocalProvider(
+        LocalTypography provides Typography,
+        LocalCustomColor provides customColors
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme as ColorScheme,
+            content = content
+        )
+    }
+
+
 }
