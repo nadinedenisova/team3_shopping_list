@@ -1,18 +1,17 @@
 package com.example.my_shoplist_application.data.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import com.example.my_shoplist_application.data.entity.IngridientEntity
 
 @Dao
 interface IngridientsDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     fun insertIngridient(ingridient: IngridientEntity)
 
-    @Query("SELECT * FROM ingridient_table")
+    @Query("SELECT indridientId, ingridient_name, ingridient_quantity, ingridient_unit, ingridient_is_bought FROM ingridient_table")
     suspend fun getIngridients(): List<IngridientEntity>
 
 }
