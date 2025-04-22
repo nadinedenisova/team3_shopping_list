@@ -1,7 +1,9 @@
 package com.example.my_shoplist_application.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.domain.api.ShoplistScreenInteractor
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenEvent
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenState
@@ -9,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScreenInteractor) :
     ViewModel() {
@@ -37,13 +40,26 @@ class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScre
 
             is ShoplistScreenEvent.OnSaveShoplistBtnClick -> { // кнопка сохранить список внизу экрана
                 viewModelScope.launch(Dispatchers.IO) {
-                    shoplistScreenInteractor.createShoplist(
-                        event.shoplist
-                    )
+                    runCatching {
+                        shoplistScreenInteractor.createShoplist(
+                            event.shoplist
+                        )
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "creating shoplist error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
                 }
             }
-
-
         }
+    }
+
+    private companion object {
+        const val TAG = "ShoplistScreenViewModel"
     }
 }
