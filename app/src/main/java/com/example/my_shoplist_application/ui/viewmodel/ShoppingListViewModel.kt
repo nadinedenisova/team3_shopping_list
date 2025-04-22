@@ -40,9 +40,9 @@ class ShoppingListViewModel: ViewModel() {
     }
 
     // Удаление элемента
-    fun deleteList(id: String) {
+    fun deleteList(list: ShoppingList?) {
         _shoppingLists.update { lists ->
-            lists.filter { it.id != id }
+            lists.filter { it.id != list?.id }
         }
     }
 
@@ -54,6 +54,14 @@ class ShoppingListViewModel: ViewModel() {
 
             _shoppingLists.update { currentLists ->
                 (currentLists + newList).sortedByDescending { it.isPinned }
+            }
+        }
+    }
+
+    fun renameList(id: String, newName: String) {
+        _shoppingLists.update { lists ->
+            lists.map { item ->
+                if (item.id == id) item.copy(name = newName) else item
             }
         }
     }

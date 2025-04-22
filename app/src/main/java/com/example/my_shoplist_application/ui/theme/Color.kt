@@ -18,7 +18,8 @@ val Pink40 = Color(0xFF7D5260)
 data class CustomColor(
     val textColor: Color,
     val blueColor: Color,
-    val background: Color
+    val background: Color,
+    val white: Color
 //    val background:Color,
 //    val blueColor:Color
 )
@@ -26,11 +27,13 @@ data class CustomColor(
 val LightCustomColor = CustomColor(
     blueColor = Blue,
     textColor = Black,
-    background = White
+    background = White,
+    white = White
 )
 
 val DarkCustomColor = CustomColor(
     blueColor = Blue,
     textColor = White,
-    background = backgroundDark
+    background = backgroundDark,
+    white = White
 )
