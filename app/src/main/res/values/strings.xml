@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">My_ShopList_Application</string>
+    <string name="delete">Удалить</string>
+    <string name="detach">Открепить</string>
+    <string name="secure">Закрепить</string>
+    <string name="all_your_lists">"Все ваши списки "</string>
+    <string name="cancel">Отмена</string>
+    <string name="create">Создать</string>
+    <string name="create_new_list">Создать новый список</string>
+    <string name="name_list">Название списка</string>
+    <string name="add_list">Добавить список</string>
+    <string name="back">Назад</string>
+    <string name="rename_list">Переименовать список</string>
+    <string name="delete_element">Удалить элемент?</string>
+    <string name="you_sure_want_delete">Вы уверены, что хотите удалить этот элемент?</string>
 </resources>
