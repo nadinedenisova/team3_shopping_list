@@ -1,7 +1,13 @@
 package com.example.my_shoplist_application.presentation.model
 
-sealed interface ShoplistScreenState {
-    data object NewList: ShoplistScreenState
-    data object EditList: ShoplistScreenState
-    data object AddingIngridient: ShoplistScreenState
+data class ShoplistScreenState(
+    val currentState: CurrentState
+) {
+
+    enum class CurrentState {
+        DEFAULT,
+        NEW_LIST_STATE,
+        EDIT_LIST_STATE,
+        ADDING_INGRIDIENT_STATE
+    }
 }

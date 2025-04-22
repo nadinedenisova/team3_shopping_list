@@ -12,27 +12,30 @@ import kotlinx.coroutines.launch
 
 class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScreenInteractor) :
     ViewModel() {
-    private val _state = MutableStateFlow<ShoplistScreenState>(ShoplistScreenState.NewList)
-    val state: StateFlow<ShoplistScreenState> get() = _state
+    private val _state =
+        MutableStateFlow<ShoplistScreenState.CurrentState>(ShoplistScreenState.CurrentState.EDIT_LIST_STATE)
+    val state: StateFlow<ShoplistScreenState.CurrentState> get() = _state
 
     fun obtainEvent(event: ShoplistScreenEvent) {
         when (event) {
             is ShoplistScreenEvent.Default -> TODO()
-            is ShoplistScreenEvent.OnBackBtnClick -> TODO()
-            is ShoplistScreenEvent.OnAddingIngridientBtnClick -> TODO()
-            is ShoplistScreenEvent.OnClearBtnInContextMenuClick -> TODO()
-            is ShoplistScreenEvent.OnContextMenuIconClick -> TODO()
-            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> TODO()
-            is ShoplistScreenEvent.OnDeleteIngridientSwipeClick -> TODO()
-            is ShoplistScreenEvent.OnEditIngridientSwipeClick -> TODO()
-            is ShoplistScreenEvent.OnIngridientUnitClick -> TODO()
-            is ShoplistScreenEvent.OnIsBoughtIngridientClick -> TODO()
-            is ShoplistScreenEvent.OnMinusIngridientQuantityClick -> TODO()
-            is ShoplistScreenEvent.OnPlusIngridientQuantityClick -> TODO()
-            is ShoplistScreenEvent.OnReadyIngridientBtnClick -> TODO()
-            is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO()
+            is ShoplistScreenEvent.OnBackBtnClick -> TODO() //кнопка назад вверху экрана
+            is ShoplistScreenEvent.OnAddingIngridientBtnClick -> TODO() // кнопка добавления нового продукта внизу экрана
+            is ShoplistScreenEvent.OnContextMenuIconClick -> TODO() // кнопка вызова контекстного меню три точки вверху экрана
+            is ShoplistScreenEvent.OnClearBtnInContextMenuClick -> TODO() // кнопка очистки списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> TODO() // кнопка удаления списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO() // кнопка переименования списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO() // кнопка сортировки списка в алфавитном порядке в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnDeleteIngridientSwipeClick -> TODO() // кнопка удаления ингридиента в свайп-меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnEditIngridientSwipeClick -> TODO() // кнопка редактирования ингридиента в свайп-меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnIngridientUnitClick -> TODO() // кнопка на панели выбора единицы измерения в статусе экрана "добавление ингридиента" (после нажатия на кнопку добавить продукт)
+            is ShoplistScreenEvent.OnMinusIngridientQuantityClick -> TODO() //там же кнопка "минус количества"
+            is ShoplistScreenEvent.OnPlusIngridientQuantityClick -> TODO() //там же кнопка "плюс количества"
+            is ShoplistScreenEvent.OnReadyIngridientBtnClick -> TODO() // там же кнопка "Готово"
+            is ShoplistScreenEvent.OnIsBoughtIngridientClick -> TODO() // флажок товар "куплен" слева от ингридиента
 
-            is ShoplistScreenEvent.OnSaveShoplistBtnClick -> {
+
+            is ShoplistScreenEvent.OnSaveShoplistBtnClick -> { // кнопка сохранить список внизу экрана
                 viewModelScope.launch(Dispatchers.IO) {
                     shoplistScreenInteractor.createShoplist(
                         event.shoplist
@@ -40,7 +43,7 @@ class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScre
                 }
             }
 
-            is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO()
+
         }
     }
 }
