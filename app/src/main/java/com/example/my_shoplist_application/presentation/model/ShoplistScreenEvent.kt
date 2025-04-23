@@ -1,6 +1,6 @@
 package com.example.my_shoplist_application.presentation.model
 
-import com.example.my_shoplist_application.domain.models.Ingridients
+import com.example.my_shoplist_application.domain.models.Ingredients
 import com.example.my_shoplist_application.domain.models.Shoplist
 
 sealed interface ShoplistScreenEvent {
@@ -11,13 +11,13 @@ sealed interface ShoplistScreenEvent {
     data object OnRenameBtnInContextMenuClick : ShoplistScreenEvent
     data object OnDeleteBtnInContextMenuClick : ShoplistScreenEvent
     data object OnClearBtnInContextMenuClick : ShoplistScreenEvent
-    class OnEditIngridientSwipeClick(val ingridientId: Int) : ShoplistScreenEvent
-    class OnDeleteIngridientSwipeClick(val ingridientId: Int) : ShoplistScreenEvent
-    class OnIsBoughtIngridientClick(val ingridientId: Int) : ShoplistScreenEvent
-    data object OnAddingIngridientBtnClick : ShoplistScreenEvent
-    class OnIngridientUnitClick(val ingridientUnit: String) : ShoplistScreenEvent
-    data object OnPlusIngridientQuantityClick : ShoplistScreenEvent
-    data object OnMinusIngridientQuantityClick : ShoplistScreenEvent
-    class OnReadyIngridientBtnClick(val ingridient: Ingridients) : ShoplistScreenEvent
+    class OnEditIngredientSwipeClick(val ingredientId: Int) : ShoplistScreenEvent
+    class OnDeleteIngredientSwipeClick(val ingredientId: Int) : ShoplistScreenEvent
+    class OnIsBoughtIngredientClick(val ingredientId: Int) : ShoplistScreenEvent
+    data object OnAddingIngredientBtnClick : ShoplistScreenEvent
+    class OnIngredientUnitClick(val ingredientUnit: String) : ShoplistScreenEvent
+    data object OnPlusIngredientQuantityClick : ShoplistScreenEvent
+    data object OnMinusIngredientQuantityClick : ShoplistScreenEvent
+    class OnReadyIngredientBtnClick(val ingredient: Ingredients) : ShoplistScreenEvent
     class OnSaveShoplistBtnClick(val shoplist: Shoplist) : ShoplistScreenEvent
 }

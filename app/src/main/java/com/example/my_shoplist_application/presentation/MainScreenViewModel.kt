@@ -1,7 +1,9 @@
 package com.example.my_shoplist_application.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.domain.api.MainScreenInteractor
 import com.example.my_shoplist_application.presentation.model.MainScreenAction
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
@@ -11,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor) : ViewModel() {
     private val _state = MutableStateFlow<MainScreenState>(MainScreenState.Default)
@@ -21,7 +24,21 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
     fun obtainEvent(event: MainScreenEvent) {
         when (event) {
             is MainScreenEvent.Default -> {
-                viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.getShoplists() }
+                viewModelScope.launch(Dispatchers.IO) {
+                    runCatching {
+                        mainScreenInteractor.getShoplists()
+
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "getting shoplist error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
+                }
             }
 
             is MainScreenEvent.OnBtnNewShopListClick -> {
@@ -40,20 +57,45 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
 
             is MainScreenEvent.OnRenameShopListClick -> {
                 val newShoplistName: String = "" // реализовать получение нового названия списка
+
                 viewModelScope.launch(Dispatchers.IO) {
-                    mainScreenInteractor.renameShoplist(
-                        event.shoplistId,
-                        newShoplistName
-                    )
+                    runCatching {
+                        mainScreenInteractor.renameShoplist(
+                            event.shoplistId,
+                            newShoplistName
+                        )
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "renaming shoplist error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
                 }
             }
 
+
             is MainScreenEvent.OnDoubleShopListClick -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    mainScreenInteractor.doubleShoplist(
-                        event.shoplistId
-                    )
+                    runCatching {
+                        mainScreenInteractor.doubleShoplist(
+                            event.shoplistId
+                        )
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "doubling shoplist error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
                 }
+
             }
 
             is MainScreenEvent.OnShopListClick -> {
@@ -61,5 +103,9 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
             }
 
         }
+    }
+
+    private companion object {
+        const val TAG = "MainScreenViewModel"
     }
 }

@@ -1,7 +1,9 @@
 package com.example.my_shoplist_application.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.domain.api.ShoplistScreenInteractor
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenEvent
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenState
@@ -9,38 +11,55 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScreenInteractor) :
     ViewModel() {
-    private val _state = MutableStateFlow<ShoplistScreenState>(ShoplistScreenState.NewList)
-    val state: StateFlow<ShoplistScreenState> get() = _state
+    private val _state =
+        MutableStateFlow<ShoplistScreenState.CurrentState>(ShoplistScreenState.CurrentState.EDIT_LIST_STATE)
+    val state: StateFlow<ShoplistScreenState.CurrentState> get() = _state
 
     fun obtainEvent(event: ShoplistScreenEvent) {
         when (event) {
             is ShoplistScreenEvent.Default -> TODO()
-            is ShoplistScreenEvent.OnBackBtnClick -> TODO()
-            is ShoplistScreenEvent.OnAddingIngridientBtnClick -> TODO()
-            is ShoplistScreenEvent.OnClearBtnInContextMenuClick -> TODO()
-            is ShoplistScreenEvent.OnContextMenuIconClick -> TODO()
-            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> TODO()
-            is ShoplistScreenEvent.OnDeleteIngridientSwipeClick -> TODO()
-            is ShoplistScreenEvent.OnEditIngridientSwipeClick -> TODO()
-            is ShoplistScreenEvent.OnIngridientUnitClick -> TODO()
-            is ShoplistScreenEvent.OnIsBoughtIngridientClick -> TODO()
-            is ShoplistScreenEvent.OnMinusIngridientQuantityClick -> TODO()
-            is ShoplistScreenEvent.OnPlusIngridientQuantityClick -> TODO()
-            is ShoplistScreenEvent.OnReadyIngridientBtnClick -> TODO()
-            is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO()
+            is ShoplistScreenEvent.OnBackBtnClick -> TODO() //кнопка назад вверху экрана
+            is ShoplistScreenEvent.OnAddingIngredientBtnClick -> TODO() // кнопка добавления нового продукта внизу экрана
+            is ShoplistScreenEvent.OnContextMenuIconClick -> TODO() // кнопка вызова контекстного меню три точки вверху экрана
+            is ShoplistScreenEvent.OnClearBtnInContextMenuClick -> TODO() // кнопка очистки списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> TODO() // кнопка удаления списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO() // кнопка переименования списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO() // кнопка сортировки списка в алфавитном порядке в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnDeleteIngredientSwipeClick -> TODO() // кнопка удаления ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnEditIngredientSwipeClick -> TODO() // кнопка редактирования ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnIngredientUnitClick -> TODO() // кнопка на панели выбора единицы измерения в статусе экрана "добавление ингредиента" (после нажатия на кнопку добавить продукт)
+            is ShoplistScreenEvent.OnMinusIngredientQuantityClick -> TODO() //там же кнопка "минус количества"
+            is ShoplistScreenEvent.OnPlusIngredientQuantityClick -> TODO() //там же кнопка "плюс количества"
+            is ShoplistScreenEvent.OnReadyIngredientBtnClick -> TODO() // там же кнопка "Готово"
+            is ShoplistScreenEvent.OnIsBoughtIngredientClick -> TODO() // флажок товар "куплен" слева от ингредиента
 
-            is ShoplistScreenEvent.OnSaveShoplistBtnClick -> {
+
+            is ShoplistScreenEvent.OnSaveShoplistBtnClick -> { // кнопка сохранить список внизу экрана
                 viewModelScope.launch(Dispatchers.IO) {
-                    shoplistScreenInteractor.createShoplist(
-                        event.shoplist
-                    )
+                    runCatching {
+                        shoplistScreenInteractor.createShoplist(
+                            event.shoplist
+                        )
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "creating shoplist error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
                 }
             }
-
-            is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO()
         }
+    }
+
+    private companion object {
+        const val TAG = "ShoplistScreenViewModel"
     }
 }
