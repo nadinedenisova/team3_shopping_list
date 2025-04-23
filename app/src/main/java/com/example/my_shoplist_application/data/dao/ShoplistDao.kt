@@ -34,4 +34,8 @@ interface ShoplistDao {
     @Query("SELECT shoplistId, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table WHERE shoplistId = :shoplistId")
     suspend fun getShoplistById(shoplistId: Int): ShoplistEntity
 
+    @Query("SELECT shoplistId, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table WHERE shoplist_name= :shoplistName")
+    suspend fun getShoplistByName(shoplistName: String): List<ShoplistEntity>
+
+
 }
