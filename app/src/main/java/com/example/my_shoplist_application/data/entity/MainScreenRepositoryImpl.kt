@@ -18,7 +18,6 @@ class MainScreenRepositoryImpl(
 ) : MainScreenRepository {
 
     override suspend fun getShoplists(retryNumber: Int): Flow<List<Shoplist>> = flow {
-
         val result = runCatching {
             val shoplists = shoplistDao.getShoplists()
             if (shoplists.isEmpty()) {
@@ -30,9 +29,8 @@ class MainScreenRepositoryImpl(
                 error.printStackTrace()
             }
         }
-
         if (result.isFailure && retryNumber != 3) {
-            getShoplists(retryNumber + 1) // не понял как тут правильно присвоить result эту функцию
+            getShoplists(retryNumber + 1)
         } else if (result.isFailure) {
             Toast.makeText(
                 context,
@@ -43,8 +41,7 @@ class MainScreenRepositoryImpl(
     }
 
     override suspend fun deleteShoplist(shoplistId: Int, retryNumber: Int): Result<Unit> {
-
-        val result = runCatching {
+        var result: Result<Unit> = runCatching {
             shoplistDao.deleteShoplist(shoplistId)
             val checkDeletingResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
             if (checkDeletingResult.isFailure) {
@@ -58,10 +55,10 @@ class MainScreenRepositoryImpl(
             }
         }
         if (result.isFailure && retryNumber != 3) {
-            deleteShoplist(
+            result = deleteShoplist(
                 shoplistId,
                 retryNumber + 1
-            ) // не понял как тут правильно присвоить result эту функцию
+            )
         } else if (result.isFailure) {
             val otherOperationResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
             if (otherOperationResult.isFailure) {
@@ -87,7 +84,7 @@ class MainScreenRepositoryImpl(
         retryNumber: Int
     ): Result<Unit> {
 
-        val result = runCatching {
+        var result: Result<Unit> = runCatching {
             shoplistDao.renameShoplist(shoplistId, shoplistName)
             val shopList = shoplistDao.getShoplistById(shoplistId)
             if (shopList.shoplistName == shoplistName) {
@@ -101,7 +98,7 @@ class MainScreenRepositoryImpl(
             }
         }
         if (result.isFailure && retryNumber != 3) {
-            renameShoplist(     // не понял как тут правильно присвоить result эту функцию
+            result = renameShoplist(
                 shoplistId, shoplistName,
                 retryNumber + 1
             )
@@ -124,17 +121,9 @@ class MainScreenRepositoryImpl(
         return result
     }
 
-    /*override suspend fun renameShoplist(
-        shoplistId: Int,
-        shoplistName: String,
-        retryNumber: Int
-    ) {
-        shoplistDao.renameShoplist(shoplistId, shoplistName)
-    }*/
-
     override suspend fun doubleShoplist(shoplistId: Int, retryNumber: Int): Result<Unit> {
 
-        val result = runCatching {
+        var result: Result<Unit> = runCatching {
             val numberOfShoplistsBefore =
                 shoplistDao.getShoplistByName(shoplistDao.getShoplistById(shoplistId).shoplistName).size
             shoplistDao.insertShoplist(shoplistDao.getShoplistById(shoplistId))
@@ -151,7 +140,7 @@ class MainScreenRepositoryImpl(
             }
         }
         if (result.isFailure && retryNumber != 3) {
-            doubleShoplist( // не понял как тут правильно присвоить result эту функцию
+            result = doubleShoplist(
                 shoplistId,
                 retryNumber + 1
             )

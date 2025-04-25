@@ -37,5 +37,13 @@ interface ShoplistDao {
     @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table WHERE shoplist_name= :shoplistName")
     suspend fun getShoplistByName(shoplistName: String): List<ShoplistEntity>
 
+    @Query("UPDATE shoplist_table SET shoplist_ingredients_list = :ingredientList WHERE shoplist_id = :shoplistId")
+    suspend fun insertIngredientInShoplist(
+        shoplistId: Int,
+        ingredientList: List<Ingredients>
+    )
+
+    @Query("SELECT shoplist_ingredients_list FROM shoplist_table WHERE shoplist_id = :shoplistId")
+    suspend fun getShoplistIngredients(shoplistId: Int): List<Ingredients>
 
 }
