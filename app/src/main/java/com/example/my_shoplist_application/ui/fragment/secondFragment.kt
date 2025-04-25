@@ -253,6 +253,7 @@ fun ShopList2(
 //    }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeableItem(
     viewModel: SecondScreenViewModel,
