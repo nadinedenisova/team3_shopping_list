@@ -12,29 +12,29 @@ interface ShoplistDao {
     @Upsert
     fun insertShoplist(shoplist: ShoplistEntity)
 
-    @Query("UPDATE shoplist_table SET shoplist_name = :shoplistName, shoplist_ingredients_list = :ingredientsList WHERE shoplistId = :shoplistId")
+    @Query("UPDATE shoplist_table SET shoplist_name = :shoplistName, shoplist_ingredients_list = :ingredientsList WHERE shoplist_id = :shoplistId")
     suspend fun updateShoplist(
         shoplistId: Int,
         shoplistName: String,
         ingredientsList: MutableList<Ingredients>
     )
 
-    @Query("UPDATE shoplist_table SET shoplist_name = :shoplistName WHERE shoplistId = :shoplistId")
+    @Query("UPDATE shoplist_table SET shoplist_name = :shoplistName WHERE shoplist_id = :shoplistId")
     suspend fun renameShoplist(
         shoplistId: Int,
         shoplistName: String
     )
 
-    @Query("SELECT shoplistId, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table ORDER BY shoplist_added_at DESC")
+    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table ORDER BY shoplist_added_at DESC")
     suspend fun getShoplists(): List<ShoplistEntity>
 
-    @Query("DELETE FROM shoplist_table WHERE shoplistId = :shoplistId")
+    @Query("DELETE FROM shoplist_table WHERE shoplist_id = :shoplistId")
     fun deleteShoplist(shoplistId: Int)
 
-    @Query("SELECT shoplistId, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table WHERE shoplistId = :shoplistId")
+    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table WHERE shoplist_id = :shoplistId")
     suspend fun getShoplistById(shoplistId: Int): ShoplistEntity
 
-    @Query("SELECT shoplistId, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table WHERE shoplist_name= :shoplistName")
+    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table WHERE shoplist_name= :shoplistName")
     suspend fun getShoplistByName(shoplistName: String): List<ShoplistEntity>
 
 

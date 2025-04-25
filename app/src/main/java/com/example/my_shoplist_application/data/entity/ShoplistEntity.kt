@@ -8,6 +8,7 @@ import com.example.my_shoplist_application.domain.models.Ingredients
 @Entity(tableName = "shoplist_table")
 data class ShoplistEntity(
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "shoplist_id")
     val shoplistId: Int,
     @ColumnInfo(name = "shoplist_name")
     val shoplistName: String,
