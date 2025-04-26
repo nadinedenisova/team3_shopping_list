@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -97,6 +98,8 @@ fun ShoppingListScreen(/*navController: NavController*/) {
     val viewModel: ShoppingListViewModel = viewModel()
     val lists by viewModel.shoppingLists.collectAsState()
     val isDialogVisible by viewModel.isDialogVisible.collectAsState()
+    val isDialogDeleteVisible by viewModel.isDialogDeleteVisible.collectAsState()
+    var newListName by remember { mutableStateOf("") }
     var selectedListForDelete by remember { mutableStateOf<ShoppingList?>(null) }
 
     Scaffold(
@@ -106,27 +109,31 @@ fun ShoppingListScreen(/*navController: NavController*/) {
                 colors = TopAppBarDefaults.topAppBarColors(LocalCustomColor.current.background),
                 modifier = Modifier.fillMaxWidth(),
                 title = {
-                    Modifier.padding(start = 5.dp)
-                    Text(
-                        stringResource(R.string.back),
-                        style = LocalTypography.current.h2,
-                        color = LocalCustomColor.current.blueColor
-                    )
+
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Навигация назад */ }) {
+                    Row(
+                        modifier = Modifier
+                            //.clickable(onClick = onBackClick)
+                            .padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.arrowback),
                             contentDescription = stringResource(R.string.back),
                             tint = LocalCustomColor.current.blueColor
                         )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(stringResource(R.string.back),
+                            style = LocalTypography.current.h3,
+                            color = LocalCustomColor.current.blueColor)
                     }
                 }
             )
         },
         floatingActionButton = {// кнопка добавить снизу
             FloatingActionButton(
-                onClick = { /*Открыть экран*/ },
+                onClick = { viewModel.showDialog()/*Открыть экран*/ },
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {
@@ -160,13 +167,13 @@ fun ShoppingListScreen(/*navController: NavController*/) {
             Modifier.padding(padding),
             onDeleteRequest = { list ->
                 selectedListForDelete = list
-                viewModel.showDialog()
+                viewModel.showDeleteDialog()
             }
         )
 
     }
 
-    if (isDialogVisible && selectedListForDelete != null) {
+    if (isDialogDeleteVisible && selectedListForDelete != null) {
         AlertDialog(
             onDismissRequest = {
                 viewModel.hideDialog()
@@ -174,14 +181,14 @@ fun ShoppingListScreen(/*navController: NavController*/) {
             title = {
                 Text(
                     text = stringResource(R.string.delete_element),
-                    style = LocalTypography.current.h2,
+                    style = LocalTypography.current.h3,
                     color = LocalCustomColor.current.textColor
                 )
             },
             text = {
                 Text(
                     stringResource(R.string.you_sure_want_delete),
-                    style = LocalTypography.current.h2,
+                    style = LocalTypography.current.h3,
                     color = LocalCustomColor.current.textColor
                 )
             },
@@ -197,7 +204,7 @@ fun ShoppingListScreen(/*navController: NavController*/) {
                 ) {
                     Text(
                         stringResource(R.string.delete),
-                        style = LocalTypography.current.h2,
+                        style = LocalTypography.current.h3,
                         color = LocalCustomColor.current.white
                     )
                 }
@@ -210,9 +217,42 @@ fun ShoppingListScreen(/*navController: NavController*/) {
                 ) {
                     Text(
                         stringResource(R.string.cancel),
-                        style = LocalTypography.current.h2,
+                        style = LocalTypography.current.h3,
                         color = LocalCustomColor.current.blueColor
                     )
+                }
+            }
+        )
+    }
+
+    if (isDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { viewModel.hideDialog() },
+            title = { Text("Создать новый список", style = LocalTypography.current.h3) },
+            text = {
+                OutlinedTextField(
+                    value = newListName,
+                    onValueChange = { newListName = it },
+                    label = { Text("Название списка", style = LocalTypography.current.h3) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = LocalTypography.current.h3
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.addNewList(newListName)
+                        newListName = ""
+                        viewModel.hideDialog()
+                    }
+                ) {
+                    Text("Создать", style = LocalTypography.current.h3)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.hideDialog() }) {
+                    Text("Отмена", style = LocalTypography.current.h3)
                 }
             }
         )
@@ -318,13 +358,13 @@ fun ListOptionsDialog(
                     label = {
                         Text(
                             text = stringResource(R.string.rename_list),
-                            style = LocalTypography.current.h2,
+                            style = LocalTypography.current.h3,
                             color = LocalCustomColor.current.textColor
                         )
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    textStyle = LocalTypography.current.h2
+                    textStyle = LocalTypography.current.h3
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -336,7 +376,7 @@ fun ListOptionsDialog(
                 ) {
                     Text(
                         "Применить",
-                        style = LocalTypography.current.h2,
+                        style = LocalTypography.current.h3,
                         color = LocalCustomColor.current.white
                     )
                 }
@@ -348,14 +388,14 @@ fun ListOptionsDialog(
                 ) {
                     Text(
                         "Создать копию",
-                        style = LocalTypography.current.h2,
+                        style = LocalTypography.current.h3,
                         color = LocalCustomColor.current.white
                     )
                 }
                 TextButton(onClick = { onDismiss() }) {
                     Text(
                         stringResource(R.string.cancel),
-                        style = LocalTypography.current.h2,
+                        style = LocalTypography.current.h3,
                         color = LocalCustomColor.current.blueColor
                     )
                 }
@@ -406,7 +446,7 @@ fun SwipeableListItem(
             ) {
                 Text(
                     if (list.isPinned) stringResource(R.string.detach) else stringResource(R.string.secure),
-                    style = LocalTypography.current.h2
+                    style = LocalTypography.current.h3
                 )
             }
 
@@ -422,7 +462,7 @@ fun SwipeableListItem(
                 shape = RoundedCornerShape(0.dp, 0.dp, 10.dp, 0.dp),
                 contentPadding = PaddingValues(0.dp)
             ) {
-                Text(stringResource(R.string.delete), style = LocalTypography.current.h2)
+                Text(stringResource(R.string.delete), style = LocalTypography.current.h3)
             }
         }
 
@@ -479,7 +519,7 @@ fun SwipeableListItem(
                 // Название списка
                 Text(
                     text = list.name,
-                    style = LocalTypography.current.h2,
+                    style = LocalTypography.current.h3,
                     color = LocalCustomColor.current.textColor
                 )
 
