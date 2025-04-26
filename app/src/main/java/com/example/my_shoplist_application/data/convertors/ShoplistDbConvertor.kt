@@ -10,16 +10,20 @@ class ShoplistDbConvertor {
             shoplist.id,
             shoplist.shoplistName,
             System.currentTimeMillis().toString(),
-            shoplist.ingredientsList,
+            shoplist.ingredientsIdList.joinToString(","),
             shoplist.isPinned
         )
     }
 
     fun map(shoplist: ShoplistEntity): Shoplist {
+        val ingredientsList = if (shoplist.ingredientIdsList.isEmpty()) emptyList()
+        else {
+            shoplist.ingredientIdsList.split(",").map { it.trim().toInt() }
+        }
         return Shoplist(
             shoplist.shoplistId,
             shoplist.shoplistName,
-            shoplist.ingredientsList,
+            ingredientsList,
             shoplist.isPinned
         )
     }
