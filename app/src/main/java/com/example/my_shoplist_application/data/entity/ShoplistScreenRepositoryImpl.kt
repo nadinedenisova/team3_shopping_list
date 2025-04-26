@@ -107,14 +107,15 @@ class ShoplistScreenRepositoryImpl(
         retryNumber: Int
     ): Result<Unit> {
         var result: Result<Unit> = runCatching {
-            val oldListOfIngredients: MutableList<Ingredients> =
-                appDataBase.shoplistDao().getShoplistIngredients(shoplist.id).toMutableList()
-            oldListOfIngredients.add(ingredient)
-            appDataBase.shoplistDao().insertIngredientInShoplist(shoplist.id, oldListOfIngredients)
+            val ingredients = shoplist.ingredientsIdList.toMutableList()
+            ingredients.add(ingredient.id)
+            appDataBase.shoplistDao()
+                .insertIngredientInShoplist(shoplist.id, ingredients.joinToString(","))
             val checkAddingResult =
                 runCatching {
-                    appDataBase.shoplistDao().getShoplistIngredients(shoplist.id)
-                        .contains(ingredient)
+                    appDataBase.shoplistDao().getShoplistIngredients(shoplist.id).split(",")
+                        .map { it.trim().toInt() }
+                        .contains(ingredient.id)
                 }
             if (checkAddingResult.isFailure) {
                 throw InvalidDatabaseStateException(message = "The ingredient was not added to shoplist")
@@ -156,13 +157,10 @@ class ShoplistScreenRepositoryImpl(
         retryNumber: Int
     ): Result<Unit> {
         var result: Result<Unit> = runCatching {
-            val listOfIngredients: MutableList<Ingredients> =
-                appDataBase.shoplistDao().getShoplistIngredients(shoplist.id).toMutableList()
-            listOfIngredients[listOfIngredients.indexOf(ingredient)].isBought = false
+            appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = false
             val checkAddingResult =
                 runCatching {
-                    !appDataBase.shoplistDao()
-                        .getShoplistIngredients(shoplist.id)[listOfIngredients.indexOf(ingredient)].isBought
+                    !appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought
                 }
             if (checkAddingResult.isFailure) {
                 throw InvalidDatabaseStateException(message = "The ingredient was not made 'not bought'")
@@ -204,15 +202,10 @@ class ShoplistScreenRepositoryImpl(
         retryNumber: Int
     ): Result<Unit> {
         var result: Result<Unit> = runCatching {
-            val listOfIngredients: MutableList<Ingredients> =
-                appDataBase.shoplistDao().getShoplistIngredients(shoplist.id).toMutableList()
-            listOfIngredients[listOfIngredients.indexOf(ingredient)].isBought = true
+            appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = true
             val checkAddingResult =
                 runCatching {
-                    appDataBase.shoplistDao()
-                        .getShoplistIngredients(shoplist.id)[listOfIngredients.indexOf(
-                        ingredient
-                    )].isBought
+                    appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought
                 }
             if (checkAddingResult.isFailure) {
                 throw InvalidDatabaseStateException(message = "The ingredient was not made 'bought'")
