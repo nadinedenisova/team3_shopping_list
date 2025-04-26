@@ -13,11 +13,11 @@ sealed interface ShoplistScreenEvent {
     data object OnClearBtnInContextMenuClick : ShoplistScreenEvent
     class OnEditIngredientSwipeClick(val ingredientId: Int) : ShoplistScreenEvent
     class OnDeleteIngredientSwipeClick(val ingredientId: Int) : ShoplistScreenEvent
-    class OnIsBoughtIngredientClick(val ingredientId: Int) : ShoplistScreenEvent
+    class OnIsBoughtIngredientClick(val ingredient: Ingredients, val shoplist: Shoplist) : ShoplistScreenEvent
     data object OnAddingIngredientBtnClick : ShoplistScreenEvent
     class OnIngredientUnitClick(val ingredientUnit: String) : ShoplistScreenEvent
     data object OnPlusIngredientQuantityClick : ShoplistScreenEvent
     data object OnMinusIngredientQuantityClick : ShoplistScreenEvent
-    class OnReadyIngredientBtnClick(val ingredient: Ingredients) : ShoplistScreenEvent
+    class OnReadyIngredientBtnClick(val ingredient: Ingredients, val shoplist: Shoplist) : ShoplistScreenEvent
     class OnSaveShoplistBtnClick(val shoplist: Shoplist) : ShoplistScreenEvent
 }
