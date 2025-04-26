@@ -11,15 +11,15 @@ class MainScreenInteractorImpl(private val mainScreenRepository: MainScreenRepos
         return mainScreenRepository.getShoplists()
     }
 
-    override suspend fun deleteShoplist(shoplistId: Int) {
+    override suspend fun deleteShoplist(shoplistId: Int): Result<Unit> {
         return mainScreenRepository.deleteShoplist(shoplistId)
     }
 
-    override suspend fun renameShoplist(shoplistId: Int, shoplistName: String) {
+    override suspend fun renameShoplist(shoplistId: Int, shoplistName: String): Result<Unit> {
         return mainScreenRepository.renameShoplist(shoplistId, shoplistName)
     }
 
-    override suspend fun doubleShoplist(shoplistId: Int) {
+    override suspend fun doubleShoplist(shoplistId: Int): Result<Unit> {
         return mainScreenRepository.doubleShoplist(shoplistId)
     }
 }

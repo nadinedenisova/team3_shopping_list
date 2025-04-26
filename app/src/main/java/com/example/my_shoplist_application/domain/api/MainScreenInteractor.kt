@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface MainScreenInteractor {
     suspend fun getShoplists(): Flow<List<Shoplist>>
-    suspend fun deleteShoplist(shoplistId: Int)
-    suspend fun renameShoplist(shoplistId: Int, shoplistName: String)
-    suspend fun doubleShoplist(shoplistId: Int)
+    suspend fun deleteShoplist(shoplistId: Int): Result<Unit>
+    suspend fun renameShoplist(shoplistId: Int, shoplistName: String): Result<Unit>
+    suspend fun doubleShoplist(shoplistId: Int): Result<Unit>
 }
