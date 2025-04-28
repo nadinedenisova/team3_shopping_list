@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 coilCompose = "3.1.0"
 coilNetworkOkhttp = "3.1.0"
 fragmentCompose = "1.8.6"
@@ -32,6 +32,7 @@ ksp = "2.1.10-1.0.30"
 foundationLayoutAndroid = "1.7.8"
 koin-bom = "3.6.0-Beta5"
 koinAndroid = "4.0.0"
+navigationCompose = "2.8.9"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -71,6 +72,7 @@ compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-core = { module = "io.insert-koin:koin-core" }
 insert-koin-koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroid" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
 
 
