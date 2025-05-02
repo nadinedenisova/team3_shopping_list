@@ -67,11 +67,12 @@ import com.example.my_shoplist_application.ui.theme.My_ShopList_ApplicationTheme
 import com.example.my_shoplist_application.ui.viewmodel.SecondScreenViewModel
 import com.example.my_shoplist_application.ui.viewmodel.ShoppingList
 import com.example.my_shoplist_application.ui.viewmodel.ShoppingListItem
+import org.koin.androidx.compose.koinViewModel
 
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ShoplistScreen(navController: NavController, viewModel: ShoplistScreenViewModel, shoplist: Shoplist) {
+fun ShoplistScreen(navController: NavController, shoplist: Shoplist, viewModel: ShoplistScreenViewModel = koinViewModel()) {
     val items by viewModel.items.collectAsState()
     val suggestedNames by viewModel.suggestedNames.collectAsState()
     var newItemName by remember { mutableStateOf("") }

@@ -13,4 +13,5 @@ interface MainScreenRepository {
     ): kotlin.Result<Unit>
 
     suspend fun doubleShoplist(shoplistId: Int, retryNumber: Int = 0): kotlin.Result<Unit>
+    suspend fun onToggleShoplist(shoplistId: Int, retryNumber: Int = 0): kotlin.Result<Unit>
 }

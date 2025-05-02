@@ -48,7 +48,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
             is MainScreenEvent.OnDeleteShopListClick -> {
                 viewModelScope.launch {
                     _action.update {
-                        MainScreenAction.ShowDeletingShoplistConfirmation
+                        MainScreenAction.ShowDeletingShoplistConfirmation(true)
                     }
                 }
                 // viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
@@ -56,13 +56,12 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
             }
 
             is MainScreenEvent.OnRenameShopListClick -> {
-                val newShoplistName: String = "" // реализовать получение нового названия списка
 
                 viewModelScope.launch(Dispatchers.IO) {
                     runCatching {
                         mainScreenInteractor.renameShoplist(
                             event.shoplistId,
-                            newShoplistName
+                            event.shoplistName
                         )
                     }.onFailure { error ->
                         if (error is CancellationException) {
@@ -102,6 +101,30 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                 // навигация на экран редактирования списка покупок
             }
 
+            is MainScreenEvent.OnTogglePinListClick -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    runCatching {
+                        mainScreenInteractor.onTogglePinList(
+                            event.shoplistId
+                        )
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "pinning/unpinning shoplist error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun obtainAction(action: MainScreenAction) {
+        when (action) {
+            is MainScreenAction.ShowDeletingShoplistConfirmation -> {}
         }
     }
 

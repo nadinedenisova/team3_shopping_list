@@ -8,23 +8,20 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.my_shoplist_application.domain.models.Shoplist
 import com.example.my_shoplist_application.presentation.MainScreen
-import com.example.my_shoplist_application.presentation.MainScreenViewModel
 import com.example.my_shoplist_application.presentation.ShoplistScreen
-import com.example.my_shoplist_application.presentation.ShoplistScreenViewModel
 import com.google.gson.Gson
 
 @Composable
 fun NavGraph(
+    gson: Gson,
     startDestination: String = Routes.MainScreen.route,
-    mainScreenViewModel: MainScreenViewModel,
-    shoplistScreenViewModel: ShoplistScreenViewModel,
-    gson: Gson
-) {
+
+    ) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Routes.MainScreen.route) {
-            MainScreen(navController, mainScreenViewModel)
+            MainScreen(navController)
         }
         composable(
             Routes.ShoplistScreen.route,
@@ -32,7 +29,7 @@ fun NavGraph(
         ) { navBackStackEntry ->
             val shopListJson = navBackStackEntry.arguments?.getString("shoplist")
             val shoplist = gson.fromJson(shopListJson, Shoplist::class.java)
-            ShoplistScreen(navController, shoplistScreenViewModel, shoplist)
+            ShoplistScreen(navController, shoplist)
         }
     }
 }

@@ -75,6 +75,7 @@ class MainScreenRepositoryImpl(
                 1 -> shoplistDao.deleteShoplist(shoplistId)
                 2 -> shoplistDao.renameShoplist(shoplistId, shoplistName)
                 3 -> shoplistDao.insertShoplist(shoplistDao.getShoplistById(shoplistId))
+                4 -> shoplistDao.onTogglePinShoplist(shoplistId, !shoplistDao.getShoplistById(shoplistId).isPinned)
             }
         }
         if (result.isSuccess) return result
@@ -118,6 +119,18 @@ class MainScreenRepositoryImpl(
     override suspend fun doubleShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
 
         return interactWithDb(shoplistId, 3)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
+            }
+    }
+
+    override suspend fun onToggleShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
+        return interactWithDb(shoplistId, 4)
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()

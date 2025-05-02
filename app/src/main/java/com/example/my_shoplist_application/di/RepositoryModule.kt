@@ -12,7 +12,7 @@ import org.koin.dsl.module
 val repositoryModule = module {
 
     single<MainScreenRepository> {
-        MainScreenRepositoryImpl(get(), get(), androidContext())
+        MainScreenRepositoryImpl(get(), get())
     }
 
     single<ShoplistScreenRepository> {

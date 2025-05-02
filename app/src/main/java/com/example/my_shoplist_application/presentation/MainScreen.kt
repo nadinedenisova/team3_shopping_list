@@ -56,29 +56,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.my_shoplist_application.R
+import com.example.my_shoplist_application.domain.models.Shoplist
+import com.example.my_shoplist_application.presentation.model.MainScreenAction
+import com.example.my_shoplist_application.presentation.model.MainScreenEvent
 import com.example.my_shoplist_application.presentation.model.MainScreenState
 import com.example.my_shoplist_application.ui.theme.LocalCustomColor
 import com.example.my_shoplist_application.ui.theme.LocalTypography
-import com.example.my_shoplist_application.ui.viewmodel.ShoppingList
-import com.example.my_shoplist_application.ui.viewmodel.ShoppingListViewModel
-import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavController,
-    gson: Gson,
     viewModel: MainScreenViewModel = koinViewModel()
 ) {
 
     val mainScreenState by viewModel.state.collectAsState()
-    //val lists by viewModel.shoppingLists.collectAsState()
-    //val isDialogVisible by viewModel.isDialogVisible.collectAsState()
-    //val isDialogDeleteVisible by viewModel.isDialogDeleteVisible.collectAsState()
+    val mainScreenAction by viewModel.action.collectAsState()
+    val isDialogVisible =
+        (mainScreenAction as MainScreenAction.ShowDeletingShoplistConfirmation).isDialogDeleteVisible
     var newListName by remember { mutableStateOf("") }
-    var selectedListForDelete by remember { mutableStateOf<ShoppingList?>(null) }
+    var selectedListForDelete by remember { mutableStateOf<Shoplist?>(null) }
 
     val lists = (mainScreenState as MainScreenState.Shoplists).shoplists
 
@@ -150,16 +148,15 @@ fun MainScreen(
             Modifier.padding(padding),
             onDeleteRequest = { list ->
                 selectedListForDelete = list
-                viewModel.showDeleteDialog()
+                viewModel.obtainAction(MainScreenAction.ShowDeletingShoplistConfirmation(true))
             }
         )
-
     }
 
-    if (isDialogDeleteVisible && selectedListForDelete != null) {
+    if (isDialogVisible && selectedListForDelete != null) {
         AlertDialog(
             onDismissRequest = {
-                viewModel.hideDialog()
+                viewModel.obtainAction(MainScreenAction.ShowDeletingShoplistConfirmation(false))
             },
             title = {
                 Text(
@@ -178,8 +175,16 @@ fun MainScreen(
             confirmButton = {
                 Button(
                     onClick = { /*удалить элемент */
-                        viewModel.deleteList(selectedListForDelete)
-                        viewModel.hideDialog()
+                        viewModel.obtainEvent(
+                            MainScreenEvent.OnDeleteShopListClick(
+                                selectedListForDelete!!.id
+                            )
+                        )
+                        viewModel.obtainAction(
+                            MainScreenAction.ShowDeletingShoplistConfirmation(
+                                false
+                            )
+                        )
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LocalCustomColor.current.blueColor
@@ -195,7 +200,11 @@ fun MainScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        viewModel.hideDialog()
+                        viewModel.obtainAction(
+                            MainScreenAction.ShowDeletingShoplistConfirmation(
+                                false
+                            )
+                        )
                     }
                 ) {
                     Text(
@@ -210,7 +219,13 @@ fun MainScreen(
 
     if (isDialogVisible) {
         AlertDialog(
-            onDismissRequest = { viewModel.hideDialog() },
+            onDismissRequest = {
+                viewModel.obtainAction(
+                    MainScreenAction.ShowDeletingShoplistConfirmation(
+                        false
+                    )
+                )
+            },
             title = { Text("Создать новый список", style = LocalTypography.current.h3) },
             text = {
                 OutlinedTextField(
@@ -225,16 +240,26 @@ fun MainScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.addNewList(newListName)
+                        viewModel.obtainEvent(MainScreenEvent.OnBtnNewShopListClick)
                         newListName = ""
-                        viewModel.hideDialog()
+                        viewModel.obtainAction(
+                            MainScreenAction.ShowDeletingShoplistConfirmation(
+                                false
+                            )
+                        )
                     }
                 ) {
                     Text("Создать", style = LocalTypography.current.h3)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.hideDialog() }) {
+                TextButton(onClick = {
+                    viewModel.obtainAction(
+                        MainScreenAction.ShowDeletingShoplistConfirmation(
+                            false
+                        )
+                    )
+                }) {
                     Text("Отмена", style = LocalTypography.current.h3)
                 }
             }
@@ -245,17 +270,16 @@ fun MainScreen(
 
 @Composable
 fun ShopList(
-    // Показать список
-    viewModel: ShoppingListViewModel,
-    lists: List<ShoppingList>,
+    viewModel: MainScreenViewModel,
+    lists: List<Shoplist>,
     modifier: Modifier = Modifier,
-    onDeleteRequest: (ShoppingList) -> Unit,
+    onDeleteRequest: (Shoplist) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    var selectedList by remember { mutableStateOf<ShoppingList?>(null) }
+    var selectedList by remember { mutableStateOf<Shoplist?>(null) }
 
     // Функция для открытия диалога
-    val openDialog: (ShoppingList) -> Unit = { list ->
+    val openDialog: (Shoplist) -> Unit = { list ->
         selectedList = list
         showDialog = true
     }
@@ -281,7 +305,7 @@ fun ShopList(
                 SwipeableListItem(
                     list = list,
                     onLongPress = { openDialog(list) },
-                    onPin = { viewModel.togglePin(list.id) },
+                    onPin = { viewModel.obtainEvent(MainScreenEvent.OnTogglePinListClick(list.id)) },
                     onDelete = { onDeleteRequest(list) },
                     onClick = {}
                 )
@@ -301,7 +325,7 @@ fun ShopList(
     if (showDialog && selectedList != null) {
         ListOptionsDialog(
             viewModel = viewModel,
-            currentName = selectedList!!.name,
+            currentName = selectedList!!.shoplistName,
             list = selectedList!!,
             onRename = {
                 // TODO: обработка переименования
@@ -320,9 +344,9 @@ fun ShopList(
 @Composable
 fun ListOptionsDialog(
     // Диалог при долгом нажатии
-    viewModel: ShoppingListViewModel,
+    viewModel: MainScreenViewModel,
     currentName: String,
-    list: ShoppingList,
+    list: Shoplist,
     onRename: (String) -> Unit,
     onCopy: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -352,7 +376,16 @@ fun ListOptionsDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { onRename(viewModel.renameList(list.id, text).toString()) },
+                    onClick = {
+                        onRename(
+                            viewModel.obtainEvent(
+                                MainScreenEvent.OnRenameShopListClick(
+                                    list.id,
+                                    text
+                                )
+                            ).toString()
+                        )
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LocalCustomColor.current.blueColor
                     )
@@ -364,7 +397,15 @@ fun ListOptionsDialog(
                     )
                 }
                 Button(
-                    onClick = { onCopy(viewModel.addNewList(text).toString()) },
+                    onClick = {
+                        onCopy(
+                            viewModel.obtainEvent(
+                                MainScreenEvent.OnDoubleShopListClick(
+                                    list.id
+                                )
+                            ).toString()
+                        )
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LocalCustomColor.current.blueColor
                     )
@@ -390,8 +431,8 @@ fun ListOptionsDialog(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeableListItem(
-    list: ShoppingList,
-    onLongPress: (ShoppingList) -> Unit,
+    list: Shoplist,
+    onLongPress: (Shoplist) -> Unit,
     onPin: () -> Unit,
     onDelete: () -> Unit,
     onClick: () -> Unit
@@ -501,7 +542,7 @@ fun SwipeableListItem(
 
                 // Название списка
                 Text(
-                    text = list.name,
+                    text = list.shoplistName,
                     style = LocalTypography.current.h3,
                     color = LocalCustomColor.current.textColor
                 )
