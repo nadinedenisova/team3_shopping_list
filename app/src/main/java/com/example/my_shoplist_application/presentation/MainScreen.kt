@@ -54,12 +54,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavController
 import com.example.my_shoplist_application.R
 import com.example.my_shoplist_application.domain.models.Shoplist
 import com.example.my_shoplist_application.presentation.model.MainScreenAction
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
-import com.example.my_shoplist_application.presentation.model.MainScreenState
 import com.example.my_shoplist_application.ui.theme.LocalCustomColor
 import com.example.my_shoplist_application.ui.theme.LocalTypography
 import org.koin.androidx.compose.koinViewModel
@@ -67,18 +65,17 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navController: NavController,
+   // navController: NavController,
     viewModel: MainScreenViewModel = koinViewModel()
 ) {
 
-    val mainScreenState by viewModel.state.collectAsState()
-    val mainScreenAction by viewModel.action.collectAsState()
-    val isDialogVisible =
-        (mainScreenAction as MainScreenAction.ShowDeletingShoplistConfirmation).isDialogDeleteVisible
+    val mainScreenState = viewModel.state.collectAsState()
+    val mainScreenAction = viewModel.action.collectAsState()
+    //val isDialogVisible = mainScreenState.value
     var newListName by remember { mutableStateOf("") }
     var selectedListForDelete by remember { mutableStateOf<Shoplist?>(null) }
 
-    val lists = (mainScreenState as MainScreenState.Shoplists).shoplists
+    val lists = mainScreenState.value.shoplists
 
     Scaffold(
         containerColor = LocalCustomColor.current.background,
@@ -114,7 +111,7 @@ fun MainScreen(
         floatingActionButton = {// кнопка добавить снизу
             val shoplistJson = null
             FloatingActionButton(
-                onClick = { navController.navigate("shoplist_screen/$shoplistJson") },
+                onClick = { /*navController.navigate("shoplist_screen/$shoplistJson")*/ },
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {
@@ -148,15 +145,15 @@ fun MainScreen(
             Modifier.padding(padding),
             onDeleteRequest = { list ->
                 selectedListForDelete = list
-                viewModel.obtainAction(MainScreenAction.ShowDeletingShoplistConfirmation(true))
+                viewModel.obtainEvent(MainScreenEvent.OnDeleteShopListConfirmClick(list.id))
             }
         )
     }
 
-    if (isDialogVisible && selectedListForDelete != null) {
+    if (mainScreenState.value.isDialogVisible && selectedListForDelete != null) {
         AlertDialog(
             onDismissRequest = {
-                viewModel.obtainAction(MainScreenAction.ShowDeletingShoplistConfirmation(false))
+                viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
             },
             title = {
                 Text(
@@ -176,13 +173,8 @@ fun MainScreen(
                 Button(
                     onClick = { /*удалить элемент */
                         viewModel.obtainEvent(
-                            MainScreenEvent.OnDeleteShopListClick(
+                            MainScreenEvent.OnDeleteShopListConfirmClick(
                                 selectedListForDelete!!.id
-                            )
-                        )
-                        viewModel.obtainAction(
-                            MainScreenAction.ShowDeletingShoplistConfirmation(
-                                false
                             )
                         )
                     },
@@ -200,11 +192,7 @@ fun MainScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        viewModel.obtainAction(
-                            MainScreenAction.ShowDeletingShoplistConfirmation(
-                                false
-                            )
-                        )
+                        viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
                     }
                 ) {
                     Text(
@@ -217,14 +205,10 @@ fun MainScreen(
         )
     }
 
-    if (isDialogVisible) {
+    if (mainScreenState.value.isDialogVisible) {
         AlertDialog(
             onDismissRequest = {
-                viewModel.obtainAction(
-                    MainScreenAction.ShowDeletingShoplistConfirmation(
-                        false
-                    )
-                )
+                viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
             },
             title = { Text("Создать новый список", style = LocalTypography.current.h3) },
             text = {
@@ -242,11 +226,7 @@ fun MainScreen(
                     onClick = {
                         viewModel.obtainEvent(MainScreenEvent.OnBtnNewShopListClick)
                         newListName = ""
-                        viewModel.obtainAction(
-                            MainScreenAction.ShowDeletingShoplistConfirmation(
-                                false
-                            )
-                        )
+                        viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
                     }
                 ) {
                     Text("Создать", style = LocalTypography.current.h3)
@@ -254,11 +234,7 @@ fun MainScreen(
             },
             dismissButton = {
                 TextButton(onClick = {
-                    viewModel.obtainAction(
-                        MainScreenAction.ShowDeletingShoplistConfirmation(
-                            false
-                        )
-                    )
+                    viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
                 }) {
                     Text("Отмена", style = LocalTypography.current.h3)
                 }

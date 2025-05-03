@@ -3,7 +3,7 @@ package com.example.my_shoplist_application.data.entity
 import android.database.sqlite.SQLiteException
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
-import com.example.my_shoplist_application.data.dao.ShoplistDao
+import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.MainScreenListError
 import com.example.my_shoplist_application.domain.db.MainScreenRepository
 import com.example.my_shoplist_application.domain.db.Result
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class MainScreenRepositoryImpl(
-    private val shoplistDao: ShoplistDao,
+    private val appDataBase: AppDataBase,
     private val shoplistDbConvertor: ShoplistDbConvertor
 ) : MainScreenRepository {
 
@@ -52,7 +52,7 @@ class MainScreenRepositoryImpl(
 
     private suspend fun getShoplistsFromDb(retryNumber: Int = 0): kotlin.Result<List<ShoplistEntity>> {
         val result = runCatching {
-            shoplistDao.getShoplists()
+            appDataBase.shoplistDao().getShoplists()
         }
         if (result.isSuccess) return result
 
@@ -72,10 +72,10 @@ class MainScreenRepositoryImpl(
         ): kotlin.Result<Unit> {
         val result = runCatching {
             when (choice) {
-                1 -> shoplistDao.deleteShoplist(shoplistId)
-                2 -> shoplistDao.renameShoplist(shoplistId, shoplistName)
-                3 -> shoplistDao.insertShoplist(shoplistDao.getShoplistById(shoplistId))
-                4 -> shoplistDao.onTogglePinShoplist(shoplistId, !shoplistDao.getShoplistById(shoplistId).isPinned)
+                1 ->  appDataBase.shoplistDao().deleteShoplist(shoplistId)
+                2 ->  appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
+                3 ->  appDataBase.shoplistDao().insertShoplist( appDataBase.shoplistDao().getShoplistById(shoplistId))
+                4 ->  appDataBase.shoplistDao().onTogglePinShoplist(shoplistId, ! appDataBase.shoplistDao().getShoplistById(shoplistId).isPinned)
             }
         }
         if (result.isSuccess) return result

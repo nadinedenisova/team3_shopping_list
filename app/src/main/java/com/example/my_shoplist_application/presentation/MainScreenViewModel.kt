@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.domain.api.MainScreenInteractor
+import com.example.my_shoplist_application.domain.db.MainScreenListError
+import com.example.my_shoplist_application.domain.db.Result
+import com.example.my_shoplist_application.domain.models.Shoplist
 import com.example.my_shoplist_application.presentation.model.MainScreenAction
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
 import com.example.my_shoplist_application.presentation.model.MainScreenState
@@ -16,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
 class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor) : ViewModel() {
-    private val _state = MutableStateFlow<MainScreenState>(MainScreenState.Default)
+    private val _state = MutableStateFlow(MainScreenState())
     val state: StateFlow<MainScreenState> get() = _state
     private val _action = MutableStateFlow<MainScreenAction?>(null)
     val action: StateFlow<MainScreenAction?> get() = _action
@@ -26,7 +29,13 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
             is MainScreenEvent.Default -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     runCatching {
-                        mainScreenInteractor.getShoplists()
+                        mainScreenInteractor.getShoplists().collect { result ->
+                            when (result) {
+                                is Result.Success -> _state.update { it.copy(shoplists = result.data) }
+                                is Result.Error<*, *> -> TODO()
+                            }
+
+                        }
 
                     }.onFailure { error ->
                         if (error is CancellationException) {
@@ -45,13 +54,15 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                 // навигация на экран создания списка покупок
             }
 
-            is MainScreenEvent.OnDeleteShopListClick -> {
+            is MainScreenEvent.OnDeleteShopListConfirmClick -> {
                 viewModelScope.launch {
+
                     _action.update {
                         MainScreenAction.ShowDeletingShoplistConfirmation(true)
                     }
+                    _state.update { it.copy(isDialogVisible = false) }
                 }
-                // viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
+                //viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
 
             }
 
@@ -119,12 +130,14 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                     }
                 }
             }
-        }
-    }
 
-    fun obtainAction(action: MainScreenAction) {
-        when (action) {
-            is MainScreenAction.ShowDeletingShoplistConfirmation -> {}
+            MainScreenEvent.OnDeleteShopListClick -> {
+                _state.update { it.copy(isDialogVisible = true) }
+            }
+
+            MainScreenEvent.OnDismissDeleteShopListClick -> {
+                _state.update { it.copy(isDialogVisible = false) }
+            }
         }
     }
 
