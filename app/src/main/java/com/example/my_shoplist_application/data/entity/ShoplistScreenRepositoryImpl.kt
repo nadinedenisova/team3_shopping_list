@@ -1,104 +1,82 @@
 package com.example.my_shoplist_application.data.entity
 
-import android.content.Context
-import android.widget.Toast
 import com.example.my_shoplist_application.BuildConfig
-import com.example.my_shoplist_application.common.InvalidDatabaseStateException
 import com.example.my_shoplist_application.data.convertors.IngredientsDbConvertor
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
 import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.ShoplistScreenRepository
 import com.example.my_shoplist_application.domain.models.Ingredients
 import com.example.my_shoplist_application.domain.models.Shoplist
+import kotlin.coroutines.cancellation.CancellationException
 
 class ShoplistScreenRepositoryImpl(
     private val appDataBase: AppDataBase,
     private val shoplistDbConvertor: ShoplistDbConvertor,
-    private val ingredientsDbConvertor: IngredientsDbConvertor,
-    private val context: Context
+    private val ingredientsDbConvertor: IngredientsDbConvertor
 ) : ShoplistScreenRepository {
+
+    private suspend fun interactWithDb(
+        shoplistId: Int = 0,
+        choice: Int,
+        shoplist: Shoplist = Shoplist(0, "", emptyList()),
+        ingredient: Ingredients = Ingredients(0, "", 0, "", false),
+        shoplistName: String = "",
+        retryNumber: Int = 0,
+
+        ): Result<Unit> {
+        val result = runCatching {
+            when (choice) {
+                1 -> appDataBase.shoplistDao().insertShoplist(shoplistDbConvertor.map(shoplist))
+                2 -> appDataBase.ingredientDao()
+                    .insertIngredient(ingredientsDbConvertor.map(ingredient))
+
+                3 -> {
+                    val ingredients = shoplist.ingredientsIdList.toMutableList()
+                    ingredients.add(ingredient.id)
+                    appDataBase.shoplistDao()
+                        .insertIngredientInShoplist(shoplist.id, ingredients.joinToString(","))
+                }
+
+                4 -> appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = false
+                5 -> appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = true
+            }
+        }
+        if (result.isSuccess) return result
+
+        return if (retryNumber != 3) {
+            interactWithDb(shoplistId, choice, shoplist, ingredient, shoplistName, retryNumber + 1)
+        } else {
+            result
+        }
+    }
 
     override suspend fun createShoplist(
         shoplist: Shoplist, retryNumber: Int
     ): Result<Unit> {
-        var result: Result<Unit> = runCatching {
-            appDataBase.shoplistDao().insertShoplist(shoplistDbConvertor.map(shoplist))
-            val checkAddingResult =
-                runCatching { appDataBase.shoplistDao().getShoplistById(shoplist.id) }
-            if (checkAddingResult.isFailure) {
-                throw InvalidDatabaseStateException(message = "The shoplist was not added to DB")
-            } else {
-                return Result.success(Unit)
+        return interactWithDb(shoplist = shoplist, choice = 1)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
-            }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = createShoplist(
-                shoplist,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { appDataBase.shoplistDao().getShoplists() }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией сохранения списка покупок в базу данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        return result
     }
 
     override suspend fun saveIngredientToDB(
         ingredient: Ingredients,
         retryNumber: Int
     ): Result<Unit> {
-        var result: Result<Unit> = runCatching {
-            appDataBase.ingredientDao().insertIngredient(ingredientsDbConvertor.map(ingredient))
-            val checkAddingResult =
-                runCatching { appDataBase.ingredientDao().getIngredientById(ingredient.id) }
-            if (checkAddingResult.isFailure) {
-                throw InvalidDatabaseStateException(message = "The ingredient was not added to DB")
-            } else {
-                return Result.success(Unit)
+        return interactWithDb(ingredient = ingredient, choice = 2)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
-            }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = saveIngredientToDB(
-                ingredient,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { appDataBase.ingredientDao().getIngredients() }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией добавления ингредиента в базу данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        return result
     }
 
     override suspend fun saveIngredientToShoplist(
@@ -106,49 +84,15 @@ class ShoplistScreenRepositoryImpl(
         shoplist: Shoplist,
         retryNumber: Int
     ): Result<Unit> {
-        var result: Result<Unit> = runCatching {
-            val ingredients = shoplist.ingredientsIdList.toMutableList()
-            ingredients.add(ingredient.id)
-            appDataBase.shoplistDao()
-                .insertIngredientInShoplist(shoplist.id, ingredients.joinToString(","))
-            val checkAddingResult =
-                runCatching {
-                    appDataBase.shoplistDao().getShoplistIngredients(shoplist.id).split(",")
-                        .map { it.trim().toInt() }
-                        .contains(ingredient.id)
+        return interactWithDb(ingredient = ingredient, shoplist = shoplist, choice = 3)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
                 }
-            if (checkAddingResult.isFailure) {
-                throw InvalidDatabaseStateException(message = "The ingredient was not added to shoplist")
-            } else {
-                return Result.success(Unit)
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
-            }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = saveIngredientToDB(
-                ingredient,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { appDataBase.shoplistDao().getShoplists() }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией добавления ингредиента в список покупок",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        return result
     }
 
     override suspend fun makeIngredientNotBought(
@@ -156,44 +100,15 @@ class ShoplistScreenRepositoryImpl(
         shoplist: Shoplist,
         retryNumber: Int
     ): Result<Unit> {
-        var result: Result<Unit> = runCatching {
-            appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = false
-            val checkAddingResult =
-                runCatching {
-                    !appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought
+        return interactWithDb(ingredient = ingredient, shoplist = shoplist, choice = 4)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
                 }
-            if (checkAddingResult.isFailure) {
-                throw InvalidDatabaseStateException(message = "The ingredient was not made 'not bought'")
-            } else {
-                return Result.success(Unit)
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
-            }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = makeIngredientNotBought(
-                ingredient, shoplist,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { appDataBase.shoplistDao().getShoplists() }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией удаления статуса ингредиента 'куплен'",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        return result
     }
 
     override suspend fun makeIngredientBought(
@@ -201,43 +116,14 @@ class ShoplistScreenRepositoryImpl(
         shoplist: Shoplist,
         retryNumber: Int
     ): Result<Unit> {
-        var result: Result<Unit> = runCatching {
-            appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = true
-            val checkAddingResult =
-                runCatching {
-                    appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought
+        return interactWithDb(ingredient = ingredient, shoplist = shoplist, choice = 5)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
                 }
-            if (checkAddingResult.isFailure) {
-                throw InvalidDatabaseStateException(message = "The ingredient was not made 'bought'")
-            } else {
-                return Result.success(Unit)
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
-            }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = makeIngredientNotBought(
-                ingredient, shoplist,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { appDataBase.shoplistDao().getShoplists() }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией присвоения статуса ингредиенту 'куплен'",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        return result
     }
 }
