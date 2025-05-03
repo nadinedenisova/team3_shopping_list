@@ -54,24 +54,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import com.example.my_shoplist_application.R
 import com.example.my_shoplist_application.domain.models.Shoplist
-import com.example.my_shoplist_application.presentation.model.MainScreenAction
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
 import com.example.my_shoplist_application.ui.theme.LocalCustomColor
 import com.example.my_shoplist_application.ui.theme.LocalTypography
 import org.koin.androidx.compose.koinViewModel
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-   // navController: NavController,
+    navController: NavController,
     viewModel: MainScreenViewModel = koinViewModel()
 ) {
 
     val mainScreenState = viewModel.state.collectAsState()
-    val mainScreenAction = viewModel.action.collectAsState()
-    //val isDialogVisible = mainScreenState.value
     var newListName by remember { mutableStateOf("") }
     var selectedListForDelete by remember { mutableStateOf<Shoplist?>(null) }
 
@@ -111,7 +110,7 @@ fun MainScreen(
         floatingActionButton = {// кнопка добавить снизу
             val shoplistJson = null
             FloatingActionButton(
-                onClick = { /*navController.navigate("shoplist_screen/$shoplistJson")*/ },
+                onClick = { navController.navigate("shoplist_screen/$shoplistJson") },
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {

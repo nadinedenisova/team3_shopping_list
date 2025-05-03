@@ -91,5 +91,6 @@ dependencies {
     implementation(libs.koin.androidx.compose.v350)
     implementation (libs.androidx.fragment.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
 
 }

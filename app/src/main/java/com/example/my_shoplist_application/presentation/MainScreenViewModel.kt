@@ -5,10 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.domain.api.MainScreenInteractor
-import com.example.my_shoplist_application.domain.db.MainScreenListError
 import com.example.my_shoplist_application.domain.db.Result
-import com.example.my_shoplist_application.domain.models.Shoplist
-import com.example.my_shoplist_application.presentation.model.MainScreenAction
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
 import com.example.my_shoplist_application.presentation.model.MainScreenState
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +18,6 @@ import kotlin.coroutines.cancellation.CancellationException
 class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor) : ViewModel() {
     private val _state = MutableStateFlow(MainScreenState())
     val state: StateFlow<MainScreenState> get() = _state
-    private val _action = MutableStateFlow<MainScreenAction?>(null)
-    val action: StateFlow<MainScreenAction?> get() = _action
 
     fun obtainEvent(event: MainScreenEvent) {
         when (event) {
@@ -56,14 +51,9 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
 
             is MainScreenEvent.OnDeleteShopListConfirmClick -> {
                 viewModelScope.launch {
-
-                    _action.update {
-                        MainScreenAction.ShowDeletingShoplistConfirmation(true)
-                    }
                     _state.update { it.copy(isDialogVisible = false) }
                 }
                 //viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
-
             }
 
             is MainScreenEvent.OnRenameShopListClick -> {

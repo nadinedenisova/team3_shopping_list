@@ -21,7 +21,7 @@ fun NavGraph(
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Routes.MainScreen.route) {
-            MainScreen(/*navController*/)
+            MainScreen(navController)
         }
         composable(
             Routes.ShoplistScreen.route,
