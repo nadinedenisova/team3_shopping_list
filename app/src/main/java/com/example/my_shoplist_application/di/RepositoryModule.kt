@@ -6,17 +6,16 @@ import com.example.my_shoplist_application.data.entity.MainScreenRepositoryImpl
 import com.example.my_shoplist_application.data.entity.ShoplistScreenRepositoryImpl
 import com.example.my_shoplist_application.domain.db.MainScreenRepository
 import com.example.my_shoplist_application.domain.db.ShoplistScreenRepository
-import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val repositoryModule = module {
 
     single<MainScreenRepository> {
-        MainScreenRepositoryImpl(get(), get(), androidContext())
+        MainScreenRepositoryImpl(get(), get())
     }
 
     single<ShoplistScreenRepository> {
-        ShoplistScreenRepositoryImpl(get(), get(), get(), androidContext())
+        ShoplistScreenRepositoryImpl(get(), get(), get())
     }
 
     factory { IngredientsDbConvertor() }

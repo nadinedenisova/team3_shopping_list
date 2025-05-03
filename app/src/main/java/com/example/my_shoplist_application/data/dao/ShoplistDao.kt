@@ -24,6 +24,12 @@ interface ShoplistDao {
         shoplistName: String
     )
 
+    @Query("UPDATE shoplist_table SET shoplist_is_pinned = :isShoplistPinned WHERE shoplist_id = :shoplistId")
+    suspend fun onTogglePinShoplist(
+        shoplistId: Int,
+        isShoplistPinned: Boolean
+    )
+
     @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned FROM shoplist_table ORDER BY shoplist_added_at DESC")
     suspend fun getShoplists(): List<ShoplistEntity>
 

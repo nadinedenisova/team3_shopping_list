@@ -1,166 +1,144 @@
 package com.example.my_shoplist_application.data.entity
 
-import android.content.Context
-import android.widget.Toast
+import android.database.sqlite.SQLiteException
 import com.example.my_shoplist_application.BuildConfig
-import com.example.my_shoplist_application.common.InvalidDatabaseStateException
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
-import com.example.my_shoplist_application.data.dao.ShoplistDao
+import com.example.my_shoplist_application.db.AppDataBase
+import com.example.my_shoplist_application.domain.db.MainScreenListError
 import com.example.my_shoplist_application.domain.db.MainScreenRepository
+import com.example.my_shoplist_application.domain.db.Result
 import com.example.my_shoplist_application.domain.models.Shoplist
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class MainScreenRepositoryImpl(
-    private val shoplistDao: ShoplistDao,
-    private val shoplistDbConvertor: ShoplistDbConvertor,
-    private val context: Context
+    private val appDataBase: AppDataBase,
+    private val shoplistDbConvertor: ShoplistDbConvertor
 ) : MainScreenRepository {
 
-    override suspend fun getShoplists(retryNumber: Int): Flow<List<Shoplist>> = flow {
-        val result = runCatching {
-            val shoplists = shoplistDao.getShoplists()
-            if (shoplists.isEmpty()) {
-                throw InvalidDatabaseStateException(message = "no shoplists yet")
-            }
-            emit(convertFromShoplistEntity(shoplists))
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
+    override suspend fun getShoplists(retryNumber: Int): Flow<Result<List<Shoplist>, MainScreenListError>> =
+        flow {
+            getShoplistsFromDb().onSuccess { data ->
+                if (data.isEmpty()) {
+                    emit(
+                        Result.Error(
+                            MainScreenListError.NotFoundError
+                        )
+                    )
+                } else {
+                    emit(Result.Success(convertFromShoplistEntity(data)))
+                }
+            }.onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (error is SQLiteException) {
+                    emit(
+                        Result.Error(
+                            MainScreenListError.DataBaseError
+                        )
+                    )
+                } else {
+                    emit(
+                        Result.Error(
+                            MainScreenListError.UnknownError
+                        )
+                    )
+                }
             }
         }
-        if (result.isFailure && retryNumber != 3) {
-            getShoplists(retryNumber + 1)
-        } else if (result.isFailure) {
-            Toast.makeText(
-                context,
-                "Техническая проблема с базой данных",
-                Toast.LENGTH_SHORT
-            ).show()
+
+
+    private suspend fun getShoplistsFromDb(retryNumber: Int = 0): kotlin.Result<List<ShoplistEntity>> {
+        val result = runCatching {
+            appDataBase.shoplistDao().getShoplists()
+        }
+        if (result.isSuccess) return result
+
+        return if (retryNumber != 3) {
+            getShoplistsFromDb(retryNumber + 1)
+        } else {
+            result
         }
     }
 
-    override suspend fun deleteShoplist(shoplistId: Int, retryNumber: Int): Result<Unit> {
-        var result: Result<Unit> = runCatching {
-            shoplistDao.deleteShoplist(shoplistId)
-            val checkDeletingResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
-            if (checkDeletingResult.isFailure) {
-                return Result.success(Unit)
-            } else {
-                throw InvalidDatabaseStateException(message = "shoplist was not deleted")
-            }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
-            }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = deleteShoplist(
-                shoplistId,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией удаления из базы данных",
-                    Toast.LENGTH_SHORT
-                ).show()
+    private suspend fun interactWithDb(
+        shoplistId: Int,
+        choice: Int,
+        shoplistName: String = "",
+        retryNumber: Int = 0,
+
+        ): kotlin.Result<Unit> {
+        val result = runCatching {
+            when (choice) {
+                1 ->  appDataBase.shoplistDao().deleteShoplist(shoplistId)
+                2 ->  appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
+                3 ->  appDataBase.shoplistDao().insertShoplist( appDataBase.shoplistDao().getShoplistById(shoplistId))
+                4 ->  appDataBase.shoplistDao().onTogglePinShoplist(shoplistId, ! appDataBase.shoplistDao().getShoplistById(shoplistId).isPinned)
             }
         }
-        return result
+        if (result.isSuccess) return result
+
+        return if (retryNumber != 3) {
+            interactWithDb(shoplistId, choice, shoplistName, retryNumber + 1)
+        } else {
+            result
+        }
+    }
+
+    override suspend fun deleteShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
+        return interactWithDb(shoplistId, 1)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
+            }
     }
 
     override suspend fun renameShoplist(
         shoplistId: Int,
         shoplistName: String,
         retryNumber: Int
-    ): Result<Unit> {
+    ): kotlin.Result<Unit> {
 
-        var result: Result<Unit> = runCatching {
-            shoplistDao.renameShoplist(shoplistId, shoplistName)
-            val shopList = shoplistDao.getShoplistById(shoplistId)
-            if (shopList.shoplistName == shoplistName) {
-                return Result.success(Unit)
-            } else {
-                throw InvalidDatabaseStateException(message = "invalid ssot, after rename name is not changed")
+        return interactWithDb(shoplistId, 2, shoplistName)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
-            }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = renameShoplist(
-                shoplistId, shoplistName,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией переименования списка",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        return result
     }
 
-    override suspend fun doubleShoplist(shoplistId: Int, retryNumber: Int): Result<Unit> {
+    override suspend fun doubleShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
 
-        var result: Result<Unit> = runCatching {
-            val numberOfShoplistsBefore =
-                shoplistDao.getShoplistByName(shoplistDao.getShoplistById(shoplistId).shoplistName).size
-            shoplistDao.insertShoplist(shoplistDao.getShoplistById(shoplistId))
-            val numberOfShoplistsAfter =
-                shoplistDao.getShoplistByName(shoplistDao.getShoplistById(shoplistId).shoplistName).size
-            if (numberOfShoplistsAfter - numberOfShoplistsBefore == 1) {
-                return Result.success(Unit)
-            } else {
-                throw InvalidDatabaseStateException(message = "shoplist was not doubled")
+        return interactWithDb(shoplistId, 3)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }.onFailure { error ->
-            if (BuildConfig.DEBUG) {
-                error.printStackTrace()
+    }
+
+    override suspend fun onToggleShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
+        return interactWithDb(shoplistId, 4)
+            .onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    error.printStackTrace()
+                }
             }
-        }
-        if (result.isFailure && retryNumber != 3) {
-            result = doubleShoplist(
-                shoplistId,
-                retryNumber + 1
-            )
-        } else if (result.isFailure) {
-            val otherOperationResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
-            if (otherOperationResult.isFailure) {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с базой данных",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией дублирования списка",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        return result
     }
 
     private fun convertFromShoplistEntity(shoplists: List<ShoplistEntity>): List<Shoplist> {

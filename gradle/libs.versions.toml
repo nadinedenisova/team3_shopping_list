@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 coilCompose = "3.1.0"
 coilNetworkOkhttp = "3.1.0"
 fragmentCompose = "1.8.6"
@@ -14,6 +14,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 kotlinxCoroutinesAndroid = "1.6.4"
+kotlinxSerializationJson = "1.8.0"
 lifecycleViewmodelCompose = "2.8.5"
 lifecycleViewmodelKtx = "2.8.5"
 material = "1.12.0"
@@ -32,6 +33,7 @@ ksp = "2.1.10-1.0.30"
 foundationLayoutAndroid = "1.7.8"
 koin-bom = "3.6.0-Beta5"
 koinAndroid = "4.0.0"
+navigationCompose = "2.8.9"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -58,6 +60,7 @@ koin-androidx-compose-v350 = { module = "io.insert-koin:koin-androidx-compose", 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationUiKtx" }
 retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
@@ -71,6 +74,7 @@ compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-core = { module = "io.insert-koin:koin-core" }
 insert-koin-koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroid" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
 
 
@@ -79,3 +83,4 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 jetbrainsKsp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
