@@ -28,4 +28,16 @@ class MainScreenInteractorImpl(private val mainScreenRepository: MainScreenRepos
     override suspend fun onTogglePinList(shoplistId: Int): kotlin.Result<Unit> {
         return mainScreenRepository.onToggleShoplist(shoplistId)
     }
+
+    override suspend fun getShoplist(): Flow<List<Shoplist>> {
+        return mainScreenRepository.getShoplist()
+    }
+
+    override suspend fun getShoplistById(id: Int): Flow<Shoplist?> {
+        return mainScreenRepository.getShoplistById(id)
+    }
+
+    override suspend fun saveShopList(list: Shoplist): Long {
+        return mainScreenRepository.saveShopList(list)
+    }
 }

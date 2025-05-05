@@ -12,7 +12,7 @@ val viewModelModule = module {
     }
 
     viewModel {
-        ShoplistScreenViewModel(get())
+        ShoplistScreenViewModel(get(), get())
     }
 
 }

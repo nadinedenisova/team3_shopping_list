@@ -10,4 +10,5 @@ sealed interface MainScreenEvent {
     class OnDoubleShopListClick(val shoplistId: Int) : MainScreenEvent
     class OnShopListClick(val shoplistId: Int) : MainScreenEvent
     class OnTogglePinListClick(val shoplistId: Int) : MainScreenEvent
+    data class Add(val name: String) : MainScreenEvent
 }

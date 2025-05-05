@@ -6,7 +6,10 @@ import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
 import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.ShoplistScreenRepository
 import com.example.my_shoplist_application.domain.models.Ingredients
+import com.example.my_shoplist_application.domain.models.MeasurementUnit
 import com.example.my_shoplist_application.domain.models.Shoplist
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlin.coroutines.cancellation.CancellationException
 
 class ShoplistScreenRepositoryImpl(
@@ -19,7 +22,7 @@ class ShoplistScreenRepositoryImpl(
         shoplistId: Int = 0,
         choice: Int,
         shoplist: Shoplist = Shoplist(0, "", emptyList()),
-        ingredient: Ingredients = Ingredients(0, "", 0, "", false),
+        ingredient: Ingredients = Ingredients(0, "", 0F, MeasurementUnit.PCS, 0, false),
         shoplistName: String = "",
         retryNumber: Int = 0,
 
@@ -125,5 +128,38 @@ class ShoplistScreenRepositoryImpl(
                     error.printStackTrace()
                 }
             }
+    }
+
+    override suspend fun updateItem(ingredient: Ingredients) {
+        appDataBase.ingredientDao().updateItem(ingredientsDbConvertor.map(ingredient))
+    }
+
+    override suspend fun deleteIngredient(ingredient: Ingredients) {
+        appDataBase.ingredientDao().deleteIngredient(ingredientsDbConvertor.map(ingredient))
+    }
+
+    override suspend fun getIngredients(listid: Int): Flow<List<Ingredients>> {
+        val ingredientEntity =
+            appDataBase.ingredientDao().getIngredientsListId(listid)
+                .map { igrif -> igrif.map { ingredientsDbConvertor.map(it) } }
+        return ingredientEntity
+    }
+
+
+    override suspend fun getSuggestions(): Flow<List<String>> {
+        return appDataBase.insertSuggestion().getSuggestions()
+    }
+
+    override suspend fun saveSuggestion(name: String) {
+        appDataBase.insertSuggestion().insertSuggestion(
+            ItemSuggestionEntity(
+                name = name,
+                lastUsed = System.currentTimeMillis()
+            )
+        )
+    }
+
+    override suspend fun getSuggestionsByPrefix(prefix: String): List<String> {
+        return appDataBase.insertSuggestion().getSuggestionsByPrefix(prefix)
     }
 }

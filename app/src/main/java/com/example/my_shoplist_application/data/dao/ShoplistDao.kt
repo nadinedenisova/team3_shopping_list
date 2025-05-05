@@ -1,6 +1,7 @@
 package com.example.my_shoplist_application.data.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Upsert
 import com.example.my_shoplist_application.data.entity.ShoplistEntity
@@ -9,7 +10,7 @@ import com.example.my_shoplist_application.data.entity.ShoplistEntity
 interface ShoplistDao {
 
     @Upsert
-    fun insertShoplist(shoplist: ShoplistEntity)
+    fun insertShoplist(shoplist: ShoplistEntity): Long
 
     @Query("UPDATE shoplist_table SET shoplist_name = :shoplistName, shoplist_ingredients_list = :ingredientsIdList WHERE shoplist_id = :shoplistId")
     suspend fun updateShoplist(
@@ -50,5 +51,8 @@ interface ShoplistDao {
 
     @Query("SELECT shoplist_ingredients_list FROM shoplist_table WHERE shoplist_id = :shoplistId")
     suspend fun getShoplistIngredients(shoplistId: Int): String
+
+    @Insert
+    suspend fun insertList(list: ShoplistEntity): Long
 
 }

@@ -6,18 +6,30 @@ import androidx.lifecycle.viewModelScope
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.domain.api.MainScreenInteractor
 import com.example.my_shoplist_application.domain.db.Result
+import com.example.my_shoplist_application.domain.models.Shoplist
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
 import com.example.my_shoplist_application.presentation.model.MainScreenState
+import com.example.my_shoplist_application.presentation.model.ShoppingListEvent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
 class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor) : ViewModel() {
     private val _state = MutableStateFlow(MainScreenState())
-    val state: StateFlow<MainScreenState> get() = _state
+    val state: StateFlow<MainScreenState> = _state.asStateFlow()
+
+    private val _events = MutableSharedFlow<ShoppingListEvent>()
+    val events = _events.asSharedFlow()
+
+    init {
+        obtainEvent(MainScreenEvent.Default)
+    }
 
     fun obtainEvent(event: MainScreenEvent) {
         when (event) {
@@ -127,6 +139,17 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
 
             MainScreenEvent.OnDismissDeleteShopListClick -> {
                 _state.update { it.copy(isDialogVisible = false) }
+            }
+
+            is MainScreenEvent.Add -> {
+                viewModelScope.launch {
+                    val newId = mainScreenInteractor.saveShopList(Shoplist(shoplistName = event.name))
+                    _events.emit(
+                        ShoppingListEvent.NavigateToIngredients(
+                            newId.toInt(),
+                        )
+                    )
+                }
             }
         }
     }
