@@ -10,6 +10,10 @@ import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.ShoplistScreenRepository
 import com.example.my_shoplist_application.domain.models.Ingredients
 import com.example.my_shoplist_application.domain.models.Shoplist
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 class ShoplistScreenRepositoryImpl(
     private val appDataBase: AppDataBase,
@@ -91,11 +95,13 @@ class ShoplistScreenRepositoryImpl(
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                Toast.makeText(
-                    context,
-                    "Техническая проблема с функцией добавления ингредиента в базу данных",
-                    Toast.LENGTH_SHORT
-                ).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "Техническая проблема с функцией добавления ингредиента в базу данных",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
         return result
@@ -239,5 +245,38 @@ class ShoplistScreenRepositoryImpl(
             }
         }
         return result
+    }
+
+    override suspend fun updateItem(ingredient: Ingredients) {
+        appDataBase.ingredientDao().updateItem(ingredientsDbConvertor.map(ingredient))
+    }
+
+    override suspend fun deleteIngredient(ingredient: Ingredients) {
+        appDataBase.ingredientDao().deleteIngredient(ingredientsDbConvertor.map(ingredient))
+    }
+
+    override suspend fun getIngredients(listid: Int): Flow<List<Ingredients>> {
+        val ingredientEntity =
+            appDataBase.ingredientDao().getIngredientsListId(listid)
+                .map { igrif -> igrif.map { ingredientsDbConvertor.map(it) } }
+        return ingredientEntity
+    }
+
+
+    override suspend fun getSuggestions(): Flow<List<String>> {
+        return appDataBase.insertSuggestion().getSuggestions()
+    }
+
+    override suspend fun saveSuggestion(name: String) {
+        appDataBase.insertSuggestion().insertSuggestion(
+            ItemSuggestionEntity(
+                name = name,
+                lastUsed = System.currentTimeMillis()
+            )
+        )
+    }
+
+    override suspend fun getSuggestionsByPrefix(prefix: String): List<String> {
+       return appDataBase.insertSuggestion().getSuggestionsByPrefix(prefix)
     }
 }

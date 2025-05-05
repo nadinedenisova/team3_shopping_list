@@ -5,21 +5,30 @@ import android.widget.Toast
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.common.InvalidDatabaseStateException
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
-import com.example.my_shoplist_application.data.dao.ShoplistDao
+import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.MainScreenRepository
 import com.example.my_shoplist_application.domain.models.Shoplist
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class MainScreenRepositoryImpl(
-    private val shoplistDao: ShoplistDao,
+    private val appDataBase: AppDataBase,
     private val shoplistDbConvertor: ShoplistDbConvertor,
     private val context: Context
 ) : MainScreenRepository {
 
+    override suspend fun saveShopList(list: Shoplist): Long {
+        return appDataBase.shoplistDao().insertList(shoplistDbConvertor.map(list))
+    }
+
+    override suspend fun getShoplistById(id: Int): Flow<Shoplist> = flow {
+        val shoplistEntity = appDataBase.shoplistDao().getShoplistById(id)
+        emit( shoplistEntity.let { shoplistDbConvertor.map(it) })
+    }
+
     override suspend fun getShoplists(retryNumber: Int): Flow<List<Shoplist>> = flow {
         val result = runCatching {
-            val shoplists = shoplistDao.getShoplists()
+            val shoplists = appDataBase.shoplistDao().getShoplists()
             if (shoplists.isEmpty()) {
                 throw InvalidDatabaseStateException(message = "no shoplists yet")
             }
@@ -42,8 +51,9 @@ class MainScreenRepositoryImpl(
 
     override suspend fun deleteShoplist(shoplistId: Int, retryNumber: Int): Result<Unit> {
         var result: Result<Unit> = runCatching {
-            shoplistDao.deleteShoplist(shoplistId)
-            val checkDeletingResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
+            appDataBase.shoplistDao().deleteShoplist(shoplistId)
+            val checkDeletingResult =
+                runCatching { appDataBase.shoplistDao().getShoplistById(shoplistId) }
             if (checkDeletingResult.isFailure) {
                 return Result.success(Unit)
             } else {
@@ -60,7 +70,8 @@ class MainScreenRepositoryImpl(
                 retryNumber + 1
             )
         } else if (result.isFailure) {
-            val otherOperationResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
+            val otherOperationResult =
+                runCatching { appDataBase.shoplistDao().getShoplistById(shoplistId) }
             if (otherOperationResult.isFailure) {
                 Toast.makeText(
                     context,
@@ -85,8 +96,8 @@ class MainScreenRepositoryImpl(
     ): Result<Unit> {
 
         var result: Result<Unit> = runCatching {
-            shoplistDao.renameShoplist(shoplistId, shoplistName)
-            val shopList = shoplistDao.getShoplistById(shoplistId)
+            appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
+            val shopList = appDataBase.shoplistDao().getShoplistById(shoplistId)
             if (shopList.shoplistName == shoplistName) {
                 return Result.success(Unit)
             } else {
@@ -103,7 +114,8 @@ class MainScreenRepositoryImpl(
                 retryNumber + 1
             )
         } else if (result.isFailure) {
-            val otherOperationResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
+            val otherOperationResult =
+                runCatching { appDataBase.shoplistDao().getShoplistById(shoplistId) }
             if (otherOperationResult.isFailure) {
                 Toast.makeText(
                     context,
@@ -125,10 +137,15 @@ class MainScreenRepositoryImpl(
 
         var result: Result<Unit> = runCatching {
             val numberOfShoplistsBefore =
-                shoplistDao.getShoplistByName(shoplistDao.getShoplistById(shoplistId).shoplistName).size
-            shoplistDao.insertShoplist(shoplistDao.getShoplistById(shoplistId))
+                appDataBase.shoplistDao().getShoplistByName(
+                    appDataBase.shoplistDao().getShoplistById(shoplistId).shoplistName
+                ).size
+            appDataBase.shoplistDao()
+                .insertShoplist(appDataBase.shoplistDao().getShoplistById(shoplistId))
             val numberOfShoplistsAfter =
-                shoplistDao.getShoplistByName(shoplistDao.getShoplistById(shoplistId).shoplistName).size
+                appDataBase.shoplistDao().getShoplistByName(
+                    appDataBase.shoplistDao().getShoplistById(shoplistId).shoplistName
+                ).size
             if (numberOfShoplistsAfter - numberOfShoplistsBefore == 1) {
                 return Result.success(Unit)
             } else {
@@ -145,7 +162,8 @@ class MainScreenRepositoryImpl(
                 retryNumber + 1
             )
         } else if (result.isFailure) {
-            val otherOperationResult = runCatching { shoplistDao.getShoplistById(shoplistId) }
+            val otherOperationResult =
+                runCatching { appDataBase.shoplistDao().getShoplistById(shoplistId) }
             if (otherOperationResult.isFailure) {
                 Toast.makeText(
                     context,

@@ -10,6 +10,7 @@ class IngredientsDbConvertor {
             ingredients.ingredientName,
             ingredients.ingredientQuantity,
             ingredients.ingredientUnit,
+            ingredients.listId,
             ingredients.isBought
         )
     }
@@ -20,6 +21,7 @@ class IngredientsDbConvertor {
             ingredients.ingredientName,
             ingredients.ingredientQuantity,
             ingredients.ingredientUnit,
+            ingredients.listId,
             ingredients.isBought
         )
     }

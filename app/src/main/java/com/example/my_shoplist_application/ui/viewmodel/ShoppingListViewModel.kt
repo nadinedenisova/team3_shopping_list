@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.update
 data class ShoppingList(
     val id: String,
     val name: String,
-    val items: List<ShoppingItem> = emptyList(),
+    val items: List<ShoppingList> = emptyList(),
     val isPinned: Boolean = false
 )
 

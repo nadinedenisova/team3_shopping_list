@@ -7,6 +7,14 @@ import kotlinx.coroutines.flow.Flow
 
 class MainScreenInteractorImpl(private val mainScreenRepository: MainScreenRepository) :
     MainScreenInteractor {
+    override suspend fun getShoplistById(id: Int): Flow<Shoplist?> {
+        return mainScreenRepository.getShoplistById(id)
+    }
+
+    override suspend fun saveShopList(list: Shoplist): Long {
+       return mainScreenRepository.saveShopList(list)
+    }
+
     override suspend fun getShoplists(): Flow<List<Shoplist>> {
         return mainScreenRepository.getShoplists()
     }
