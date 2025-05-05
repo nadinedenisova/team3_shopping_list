@@ -1,4 +1,4 @@
-package com.example.my_shoplist_application.ui.theme
+package com.example.my_shoplist_application.presentation.ui.theme
 
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight

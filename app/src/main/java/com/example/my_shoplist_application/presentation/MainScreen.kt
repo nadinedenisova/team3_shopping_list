@@ -39,6 +39,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -54,27 +55,26 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavController
 import com.example.my_shoplist_application.R
 import com.example.my_shoplist_application.domain.models.Shoplist
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
-import com.example.my_shoplist_application.ui.theme.LocalCustomColor
-import com.example.my_shoplist_application.ui.theme.LocalTypography
+import com.example.my_shoplist_application.presentation.model.ShoppingListEvent
+import com.example.my_shoplist_application.presentation.ui.theme.LocalCustomColor
+import com.example.my_shoplist_application.presentation.ui.theme.LocalTypography
 import org.koin.androidx.compose.koinViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navController: NavController,
-    viewModel: MainScreenViewModel = koinViewModel()
+    onListClick: (Int) -> Unit
 ) {
-
-    val mainScreenState = viewModel.state.collectAsState()
+    val viewModel: MainScreenViewModel = koinViewModel()
+    val mainScreenState by viewModel.state.collectAsState()
     var newListName by remember { mutableStateOf("") }
     var selectedListForDelete by remember { mutableStateOf<Shoplist?>(null) }
 
-    val lists = mainScreenState.value.shoplists
+    val lists = mainScreenState.shoplists
 
     Scaffold(
         containerColor = LocalCustomColor.current.background,
@@ -110,7 +110,7 @@ fun MainScreen(
         floatingActionButton = {// кнопка добавить снизу
             val shoplistJson = null
             FloatingActionButton(
-                onClick = { navController.navigate("shoplist_screen/$shoplistJson") },
+                onClick = { viewModel.obtainEvent(MainScreenEvent.OnDeleteShopListClick) },
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {
@@ -145,11 +145,12 @@ fun MainScreen(
             onDeleteRequest = { list ->
                 selectedListForDelete = list
                 viewModel.obtainEvent(MainScreenEvent.OnDeleteShopListConfirmClick(list.id))
-            }
+            },
+            onClick = onListClick
         )
     }
 
-    if (mainScreenState.value.isDialogVisible && selectedListForDelete != null) {
+    if (mainScreenState.isDialogVisible && selectedListForDelete != null) {
         AlertDialog(
             onDismissRequest = {
                 viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
@@ -204,42 +205,72 @@ fun MainScreen(
         )
     }
 
-    if (mainScreenState.value.isDialogVisible) {
-        AlertDialog(
-            onDismissRequest = {
-                viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
-            },
-            title = { Text("Создать новый список", style = LocalTypography.current.h3) },
-            text = {
-                OutlinedTextField(
-                    value = newListName,
-                    onValueChange = { newListName = it },
-                    label = { Text("Название списка", style = LocalTypography.current.h3) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = LocalTypography.current.h3
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.obtainEvent(MainScreenEvent.OnBtnNewShopListClick)
-                        newListName = ""
-                        viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
-                    }
-                ) {
-                    Text("Создать", style = LocalTypography.current.h3)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
-                }) {
-                    Text("Отмена", style = LocalTypography.current.h3)
-                }
-            }
+    if (mainScreenState.isDialogVisible) {
+        DialogAddNameList(
+            viewModel = viewModel,
+            onListClick = onListClick,
+            onDismiss = { viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick) }
         )
     }
+}
+
+@Composable
+fun DialogAddNameList(
+    viewModel: MainScreenViewModel,
+    onListClick: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var newListName by remember { mutableStateOf("") }
+
+    // Подписка на события навигации и скрытия диалога
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ShoppingListEvent.NavigateToIngredients -> {
+                    onListClick(event.listId)
+                    newListName = ""
+                }
+
+                ShoppingListEvent.HideDialog -> {
+                    newListName = ""
+                }
+            }
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Создать новый список", style = LocalTypography.current.h3) },
+        text = {
+            OutlinedTextField(
+                value = newListName,
+                onValueChange = { newListName = it },
+                label = { Text("Название списка", style = LocalTypography.current.h3) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = LocalTypography.current.h3
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (newListName.isNotBlank()) {
+                        viewModel.obtainEvent(MainScreenEvent.Add(newListName))
+                        viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
+                        newListName = ""
+                    }
+                }
+            ) {
+                Text("Создать", style = LocalTypography.current.h3)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Отмена", style = LocalTypography.current.h3)
+            }
+        }
+    )
 }
 
 
@@ -249,6 +280,7 @@ fun ShopList(
     lists: List<Shoplist>,
     modifier: Modifier = Modifier,
     onDeleteRequest: (Shoplist) -> Unit,
+    onClick: (Int) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedList by remember { mutableStateOf<Shoplist?>(null) }
@@ -282,7 +314,7 @@ fun ShopList(
                     onLongPress = { openDialog(list) },
                     onPin = { viewModel.obtainEvent(MainScreenEvent.OnTogglePinListClick(list.id)) },
                     onDelete = { onDeleteRequest(list) },
-                    onClick = {}
+                    onClick =  onClick
                 )
                 HorizontalDivider()
             }
@@ -410,7 +442,7 @@ fun SwipeableListItem(
     onLongPress: (Shoplist) -> Unit,
     onPin: () -> Unit,
     onDelete: () -> Unit,
-    onClick: () -> Unit
+    onClick: (Int) -> Unit
 ) {
     var isRevealed by remember { mutableStateOf(false) }
     var offsetX by remember { mutableFloatStateOf(0f) }
@@ -499,7 +531,7 @@ fun SwipeableListItem(
                     .fillMaxWidth()
                     .padding(16.dp)
                     .combinedClickable(
-                        onClick = { onClick /*действие при обычном клике*/ },
+                        onClick = { onClick(list.id) /*действие при обычном клике*/ },
                         onLongClick = { onLongPress(list) }  // Долгое нажатие
                     ),
                 verticalAlignment = Alignment.CenterVertically,

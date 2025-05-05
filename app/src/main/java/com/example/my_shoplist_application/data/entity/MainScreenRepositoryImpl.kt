@@ -2,6 +2,7 @@ package com.example.my_shoplist_application.data.entity
 
 import android.database.sqlite.SQLiteException
 import com.example.my_shoplist_application.BuildConfig
+import com.example.my_shoplist_application.common.InvalidDatabaseStateException
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
 import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.MainScreenListError
@@ -143,5 +144,23 @@ class MainScreenRepositoryImpl(
 
     private fun convertFromShoplistEntity(shoplists: List<ShoplistEntity>): List<Shoplist> {
         return shoplists.map { shoplist -> shoplistDbConvertor.map(shoplist) }
+    }
+
+    override suspend fun getShoplist(retryNumber: Int): Flow<List<Shoplist>> = flow {
+        val result = runCatching {
+            val shoplists = appDataBase.shoplistDao().getShoplists()
+            if (shoplists.isEmpty()) {
+                throw InvalidDatabaseStateException(message = "no shoplists yet")
+            }
+        }
+    }
+
+    override suspend fun saveShopList(list: Shoplist): Long {
+        return appDataBase.shoplistDao().insertList(shoplistDbConvertor.map(list))
+    }
+
+    override suspend fun getShoplistById(id: Int): Flow<Shoplist> = flow {
+        val shoplistEntity = appDataBase.shoplistDao().getShoplistById(id)
+        emit( shoplistEntity.let { shoplistDbConvertor.map(it) })
     }
 }
