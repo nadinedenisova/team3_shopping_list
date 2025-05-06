@@ -8,7 +8,8 @@ import com.example.my_shoplist_application.domain.models.Shoplist
 sealed interface ShoplistScreenEvent {
     data class Default(val listId: Int) : ShoplistScreenEvent
     data object OnBackBtnClick : ShoplistScreenEvent
-    data class OnContextMenuIconClick(val position: Offset) : ShoplistScreenEvent
+    data class ShowContextMenu(val position: Offset) : ShoplistScreenEvent
+    object HideContextMenu : ShoplistScreenEvent
     data object OnSortBtnInContextMenuClick : ShoplistScreenEvent
     data object OnRenameBtnInContextMenuClick : ShoplistScreenEvent
     data object OnDeleteBtnInContextMenuClick : ShoplistScreenEvent
@@ -23,4 +24,6 @@ sealed interface ShoplistScreenEvent {
     class OnReadyIngredientBtnClick(val ingredient: Ingredients, val shoplist: Shoplist) : ShoplistScreenEvent
     class OnSaveShoplistBtnClick(val shoplist: Shoplist) : ShoplistScreenEvent
     data class UpdateItemName(val text: String) : ShoplistScreenEvent
+    object ShowDialogAddIngredient: ShoplistScreenEvent
+    object HideDialogAddIngredient: ShoplistScreenEvent
 }

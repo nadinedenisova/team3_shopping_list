@@ -25,20 +25,11 @@ class ShoplistScreenViewModel(
 ) :
     ViewModel() {
     private val _state = MutableStateFlow<IngredientListState>(IngredientListState())
-    val stateIngredient: StateFlow<IngredientListState> get() = _state
+    val stateIngredient = _state.asStateFlow()
 
     private val _shoplist = MutableStateFlow<Shoplist?>(null)
-    val shoplist: StateFlow<Shoplist?> = _shoplist
+    val shoplist = _shoplist.asStateFlow()
 
-    private val _isDialogVisible = MutableStateFlow(false) // временно
-    val isDialogVisible = _isDialogVisible.asStateFlow()
-
-    private val _isDialogDeleteVisible = MutableStateFlow(false) // временно
-    val isDialogDeleteVisible = _isDialogDeleteVisible.asStateFlow()
-
-    fun showDialog() {
-        _isDialogVisible.value = true
-    }
 
     fun getShoppingListById(id: Int) {
         viewModelScope.launch {
@@ -89,14 +80,25 @@ class ShoplistScreenViewModel(
                 }
             }
 
-            is ShoplistScreenEvent.OnContextMenuIconClick -> {// кнопка вызова контекстного меню три точки вверху экрана
+            is ShoplistScreenEvent.ShowContextMenu -> {// кнопка вызова контекстного меню три точки вверху экрана
                 _state.update {
                     it.copy(showContextMenu = true, contextMenuPosition = event.position)
                 }
             }
 
+            is ShoplistScreenEvent.HideContextMenu -> {
+                _state.update {
+                    it.copy(showContextMenu = false)
+                }
+            }
+
+
             is ShoplistScreenEvent.OnClearBtnInContextMenuClick -> TODO() // кнопка очистки списка в контекстном меню (нет в фигме, есть в ТЗ)
-            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> TODO() // кнопка удаления списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> {// кнопка удаления списка в контекстном меню (нет в фигме, есть в ТЗ)
+                viewModelScope.launch {
+                    shoplistScreenInteractor.deleteBoughtItems()
+                }
+            }
             is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO() // кнопка переименования списка в контекстном меню (нет в фигме, есть в ТЗ)
             is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO() // кнопка сортировки списка в алфавитном порядке в контекстном меню (нет в фигме, есть в ТЗ)
             is ShoplistScreenEvent.OnDeleteIngredientSwipeClick -> { // кнопка удаления ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
@@ -105,6 +107,7 @@ class ShoplistScreenViewModel(
                 }
 
             }
+
             is ShoplistScreenEvent.OnEditIngredientSwipeClick -> TODO() // кнопка редактирования ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
             is ShoplistScreenEvent.OnIngredientUnitClick -> TODO() // кнопка на панели выбора единицы измерения в статусе экрана "добавление ингредиента" (после нажатия на кнопку добавить продукт)
             is ShoplistScreenEvent.OnMinusIngredientQuantityClick -> TODO() //там же, кнопка "минус количества"
@@ -144,10 +147,10 @@ class ShoplistScreenViewModel(
                 }
             }
 
-                is ShoplistScreenEvent.OnIsBoughtIngredientClick -> { // флажок товар "куплен" слева от ингредиента
-                    viewModelScope.launch {
-                        runCatching {
-                            shoplistScreenInteractor.updateItem(event.ingredient.copy(isBought = !event.ingredient.isBought))
+            is ShoplistScreenEvent.OnIsBoughtIngredientClick -> { // флажок товар "куплен" слева от ингредиента
+                viewModelScope.launch {
+                    runCatching {
+                        shoplistScreenInteractor.updateItem(event.ingredient.copy(isBought = !event.ingredient.isBought))
 //                        if (event.ingredient.isBought) {
 //                            event.ingredient.isBought = false
 //                            shoplistScreenInteractor.makeIngredientNotBought(
@@ -170,46 +173,54 @@ class ShoplistScreenViewModel(
 //                        } else {
 //                            // Отправка логов об исключении на сервер
 //                        }
-                        }
                     }
                 }
-                is ShoplistScreenEvent.OnSaveShoplistBtnClick -> { // кнопка сохранить список внизу экрана
-                    viewModelScope.launch(Dispatchers.IO) {
-                        runCatching {
-                            shoplistScreenInteractor.createShoplist(
-                                event.shoplist
-                            )
-                        }.onFailure { error ->
-                            if (error is CancellationException) {
-                                throw CancellationException()
-                            }
-                            if (BuildConfig.DEBUG) {
-                                Log.e(TAG, "creating shoplist error: $error")
-                            } else {
-                                // Отправка логов об исключении на сервер
-                            }
-                        }
-                    }
-                }
+            }
 
-                is ShoplistScreenEvent.UpdateItemName -> {// подсказка при вводе
-                    _state.update { it.copy(newItemName = event.text) }
-                    if (event.text.isNotEmpty()){
-                        viewModelScope.launch {
-                            val suggestions = shoplistScreenInteractor.getSuggestionsByPrefix(event.text)
-                            _state.update { it.copy(suggestions = suggestions) }
+            is ShoplistScreenEvent.OnSaveShoplistBtnClick -> { // кнопка сохранить список внизу экрана не подключено
+                viewModelScope.launch(Dispatchers.IO) {
+                    runCatching {
+                        shoplistScreenInteractor.createShoplist(
+                            event.shoplist
+                        )
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "creating shoplist error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
                         }
                     }
                 }
             }
+
+            is ShoplistScreenEvent.UpdateItemName -> {// подсказка при вводе +
+                _state.update { it.copy(newItemName = event.text) }
+                if (event.text.isNotEmpty()) {
+                    viewModelScope.launch {
+                        val suggestions =
+                            shoplistScreenInteractor.getSuggestionsByPrefix(event.text)
+                        _state.update { it.copy(suggestions = suggestions) }
+                    }
+                }
+            }
+
+            ShoplistScreenEvent.ShowDialogAddIngredient -> {
+                _state.update {
+                    it.copy(showDialogAddIngredient = true,)
+                }
+            }
+
+            ShoplistScreenEvent.HideDialogAddIngredient -> {
+                _state.update {
+                    it.copy(showDialogAddIngredient = false,)
+                }
+            }
+
         }
 
-        fun hideDialog() {
-            _isDialogVisible.value = false
-            _isDialogDeleteVisible.value = false
-        }
-        fun showDeleteDialog() {
-            _isDialogDeleteVisible.value = true
         }
 
         private companion object {

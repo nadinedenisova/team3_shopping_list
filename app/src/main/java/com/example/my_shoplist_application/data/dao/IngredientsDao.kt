@@ -43,4 +43,7 @@ interface IngredientsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)// это для подсказки при вводе текста
     suspend fun insertSuggestion(suggestion: ItemSuggestionEntity)
+
+    @Query("DELETE FROM ingredient_table WHERE ingredient_is_bought = 1")
+    suspend fun deleteBoughtItems()
 }

@@ -61,4 +61,8 @@ class ShoplistScreenInteractorImpl(private val shoplistScreenRepository: Shoplis
     override suspend fun getSuggestionsByPrefix(prefix: String): List<String> {
         return shoplistScreenRepository.getSuggestionsByPrefix(prefix)
     }
+
+    override suspend fun deleteBoughtItems() {
+        shoplistScreenRepository.deleteBoughtItems()
+    }
 }

@@ -24,8 +24,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
@@ -45,6 +49,8 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -58,6 +64,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -70,10 +77,13 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.example.my_shoplist_application.R
@@ -94,8 +104,6 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
     val viewModel: ShoplistScreenViewModel = koinViewModel()
     val stateIngredient by viewModel.stateIngredient.collectAsState()
     val shoplist by viewModel.shoplist.collectAsState()
-    val isDialogVisible by viewModel.isDialogVisible.collectAsState()
-    val isDialogDeleteVisible by viewModel.isDialogDeleteVisible.collectAsState()
 
     LaunchedEffect(listId) {
         viewModel.getShoppingListById(listId)
@@ -133,7 +141,7 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                 actions = {
                     IconButton(onClick = {
                         viewModel.obtainEvent(
-                            event = ShoplistScreenEvent.OnContextMenuIconClick(Offset(0f, 0f))
+                            event = ShoplistScreenEvent.ShowContextMenu(Offset(0f, 0f))
                         )
                     })
                     {
@@ -164,33 +172,6 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                         }
                     }
                 },
-//                actions = {
-//                    Box(
-//                        modifier = Modifier
-//                            .padding(end = 16.dp),
-//                        contentAlignment = Alignment.CenterEnd,
-//
-//                        ) {
-//                        Surface(
-//                            modifier = Modifier
-//                                .size(24.dp)
-//                                .border(
-//                                    2.dp,
-//                                    LocalCustomColor.current.blueColor,
-//                                    CircleShape
-//                                ),
-//                            shape = CircleShape,
-//                            color = LocalCustomColor.current.background,
-//                            content = {},
-//                        )
-//                        Text(
-//                            "•••",
-//                            color = LocalCustomColor.current.blueColor,
-//                            modifier = Modifier.padding(end = 3.dp),
-//                            maxLines = 1
-//                        )
-//                    }
-//                }
             )
         },
         floatingActionButton = {// кнопка добавить снизу
@@ -214,7 +195,6 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
 
         Box(modifier = Modifier.padding(padding)) {
             ShowIngridientList(
-                viewModel = viewModel,
                 state = stateIngredient,
                 onDelete = {
                     viewModel.obtainEvent(
@@ -229,10 +209,11 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                             ShoplistScreenEvent.OnIsBoughtIngredientClick(it, shopList)
                         )
                     }
-                }
+                },
+                onClick = {viewModel.obtainEvent(ShoplistScreenEvent.ShowDialogAddIngredient)},
             )
 
-            if (isDialogVisible) {
+            if (stateIngredient.showDialogAddIngredient) {
                 DialogAddProduct(
                     newItemName = stateIngredient.newItemName,
                     onItemNameChange = { viewModel.obtainEvent(ShoplistScreenEvent.UpdateItemName(it)) },
@@ -240,8 +221,9 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                     onSuggestionSelected = { suggestion ->
                         viewModel.obtainEvent(ShoplistScreenEvent.UpdateItemName(suggestion))
                     },
+                    onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideDialogAddIngredient) },
                     viewModel,
-                    shoplist
+                    shoplist,
                 )
             }
 
@@ -249,8 +231,8 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                 ContextMenu(
                     position = stateIngredient.contextMenuPosition,
                     onSorting = {},
-                    onDismiss = { },
-                    onClear = { }
+                    onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideContextMenu) },
+                    onClear = { viewModel.obtainEvent(ShoplistScreenEvent.OnDeleteBtnInContextMenuClick) }
                 )
             }
 
@@ -258,15 +240,13 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
     }
 }
 
-
-
-// Диалог добавления продукта
 @Composable
 fun DialogAddProduct(
     newItemName: String,
     onItemNameChange: (String) -> Unit,
     suggestions: List<String>,
     onSuggestionSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
     viewModel: ShoplistScreenViewModel,
     shoplist: Shoplist?
 ) {
@@ -274,7 +254,7 @@ fun DialogAddProduct(
     var newItemUnit by remember { mutableStateOf(MeasurementUnit.PCS) }
 
     AlertDialog(
-        onDismissRequest = { viewModel.hideDialog() },
+        onDismissRequest = onDismiss,
         title = { Text("Создать новый список", style = LocalTypography.current.h3) },
         text = {
             Column {
@@ -388,7 +368,7 @@ fun DialogAddProduct(
                         )
                         onItemNameChange("")
                         newItemQuantity = ""
-                        viewModel.hideDialog()
+                        viewModel.obtainEvent(ShoplistScreenEvent.HideDialogAddIngredient)
                     }
                 }
             ) {
@@ -396,7 +376,7 @@ fun DialogAddProduct(
             }
         },
         dismissButton = {
-            TextButton(onClick = { viewModel.hideDialog() }) {
+            TextButton(onClick = onDismiss) {
                 Text("Отмена", style = LocalTypography.current.h3)
             }
         }
@@ -407,10 +387,10 @@ fun DialogAddProduct(
 // Показать список
 @Composable
 fun ShowIngridientList(
-    viewModel: ShoplistScreenViewModel,
     state: IngredientListState,
     onDelete: (Ingredients) -> Unit,
     onTogglePurchased: (Ingredients) -> Unit,
+    onClick: () -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedList by remember { mutableStateOf<Shoplist?>(null) }
@@ -442,7 +422,7 @@ fun ShowIngridientList(
 
         TextButton(
             modifier = Modifier.align(Alignment.Start),
-            onClick = { viewModel.showDialog() /*Открыть диалог Добавить продукт*/ },
+            onClick = onClick,
         ) {
             Text(
                 "Добавить продукт",

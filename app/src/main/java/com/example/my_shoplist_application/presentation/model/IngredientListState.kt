@@ -12,7 +12,9 @@ data class IngredientListState(
     val newItemUnit: MeasurementUnit = MeasurementUnit.PCS,
     val suggestions: List<String> = emptyList(),
     val showContextMenu: Boolean = false,
-    val contextMenuPosition: Offset = Offset.Zero
+    val contextMenuPosition: Offset = Offset.Zero,
+    val showDialogAddIngredient: Boolean = false,
+    val showDialogRenameIngredient: Boolean = false
 ) {
 
     enum class SortOrder {

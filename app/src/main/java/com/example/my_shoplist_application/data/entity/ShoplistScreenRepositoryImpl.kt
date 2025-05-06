@@ -162,4 +162,8 @@ class ShoplistScreenRepositoryImpl(
     override suspend fun getSuggestionsByPrefix(prefix: String): List<String> {
         return appDataBase.insertSuggestion().getSuggestionsByPrefix(prefix)
     }
+
+    override suspend fun deleteBoughtItems() {
+        appDataBase.ingredientDao().deleteBoughtItems()
+    }
 }
