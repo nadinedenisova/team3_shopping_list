@@ -76,6 +76,8 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                             event.shoplistId,
                             event.shoplistName
                         )
+                        obtainEvent(MainScreenEvent.Default)
+
                     }.onFailure { error ->
                         if (error is CancellationException) {
                             throw CancellationException()
@@ -96,6 +98,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                         mainScreenInteractor.doubleShoplist(
                             event.shoplistId
                         )
+                        obtainEvent(MainScreenEvent.Default)
                     }.onFailure { error ->
                         if (error is CancellationException) {
                             throw CancellationException()
