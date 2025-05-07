@@ -75,8 +75,18 @@ class MainScreenRepositoryImpl(
             when (choice) {
                 1 -> appDataBase.shoplistDao().deleteShoplist(shoplistId)
                 2 -> appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
-                3 -> appDataBase.shoplistDao()
-                    .insertShoplist(appDataBase.shoplistDao().getShoplistById(shoplistId))
+                3 -> {
+                    val oldShoplistEntity = appDataBase.shoplistDao().getShoplistById(shoplistId)
+                    val newShopListEntity = ShoplistEntity(
+                        shoplistId = oldShoplistEntity.shoplistId + 1,
+                        shoplistName = oldShoplistEntity.shoplistName,
+                        ingredientIdsList = oldShoplistEntity.ingredientIdsList,
+                        addedAt = oldShoplistEntity.addedAt,
+                        isPinned = oldShoplistEntity.isPinned
+                    )
+                    appDataBase.shoplistDao()
+                        .insertShoplist(newShopListEntity)
+                }
 
                 4 -> appDataBase.shoplistDao().onTogglePinShoplist(
                     shoplistId,
