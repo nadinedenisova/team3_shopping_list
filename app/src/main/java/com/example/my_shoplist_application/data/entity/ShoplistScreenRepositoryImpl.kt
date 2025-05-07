@@ -22,7 +22,7 @@ class ShoplistScreenRepositoryImpl(
         shoplistId: Int = 0,
         choice: Int,
         shoplist: Shoplist = Shoplist(0, "", emptyList()),
-        ingredient: Ingredients = Ingredients(0, "", 0F, MeasurementUnit.PCS, 0, false),
+        ingredient: Ingredients = Ingredients(0, "", 0, MeasurementUnit.PCS, 0, false),
         shoplistName: String = "",
         retryNumber: Int = 0,
 
@@ -141,7 +141,7 @@ class ShoplistScreenRepositoryImpl(
     override suspend fun getIngredients(listid: Int): Flow<List<Ingredients>> {
         val ingredientEntity =
             appDataBase.ingredientDao().getIngredientsListId(listid)
-                .map { igrif -> igrif.map { ingredientsDbConvertor.map(it) } }
+                .map { it -> it.map { ingredientsDbConvertor.map(it) } }
         return ingredientEntity
     }
 
@@ -166,4 +166,23 @@ class ShoplistScreenRepositoryImpl(
     override suspend fun deleteBoughtItems() {
         appDataBase.ingredientDao().deleteBoughtItems()
     }
+
+    override suspend fun updateAllBoughtStatus(listid: Int, isBought: Boolean): Flow<List<Ingredients>> {
+        appDataBase.ingredientDao().updateAllBoughtStatus(listid,isBought)
+        val list = appDataBase.ingredientDao().getIngredientsListId(listid).map { it -> it.map { ingredientsDbConvertor.map(it) } }
+        return list
+    }
+
+//    override suspend fun updateAllBoughtStatus2(shopListId: Int, isBought: Boolean) {
+//        appDataBase.ingredientDao().updateAllBoughtStatus(shopListId, isBought)
+//    }
+//
+//    override fun getIngredients2(shopListId: Int): Flow<List<Ingredients>> {
+//        return ingredientsDao.getIngredientsByShopListId(shopListId)
+//    }
+//
+//    override suspend fun updateBoughtStatusAndGetIngredients(shopListId: Int, isBought: Boolean): Flow<List<Ingredients>> {
+//        updateAllBoughtStatus2(shopListId, isBought)
+//        return getIngredients2(shopListId)
+//    }
 }

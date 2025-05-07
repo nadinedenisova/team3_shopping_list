@@ -46,4 +46,7 @@ interface IngredientsDao {
 
     @Query("DELETE FROM ingredient_table WHERE ingredient_is_bought = 1")
     suspend fun deleteBoughtItems()
+
+    @Query("UPDATE ingredient_table SET ingredient_is_bought = :isBought WHERE listId = :listid")
+    suspend fun updateAllBoughtStatus(listid: Int, isBought: Boolean)
 }

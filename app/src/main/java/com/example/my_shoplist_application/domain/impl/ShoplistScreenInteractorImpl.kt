@@ -51,7 +51,7 @@ class ShoplistScreenInteractorImpl(private val shoplistScreenRepository: Shoplis
     }
 
     override suspend fun getSuggestions(): Flow<List<String>> {
-        return  shoplistScreenRepository.getSuggestions()
+        return shoplistScreenRepository.getSuggestions()
     }
 
     override suspend fun saveSuggestion(name: String) {
@@ -64,5 +64,12 @@ class ShoplistScreenInteractorImpl(private val shoplistScreenRepository: Shoplis
 
     override suspend fun deleteBoughtItems() {
         shoplistScreenRepository.deleteBoughtItems()
+    }
+
+    override suspend fun updateAllBoughtStatus(
+        listid: Int,
+        isBought: Boolean
+    ): Flow<List<Ingredients>> {
+        return shoplistScreenRepository.updateAllBoughtStatus(listid, isBought)
     }
 }
