@@ -30,3 +30,4 @@ data class IngredientEntity(
     @ColumnInfo(name = "ingredient_is_bought")
     var isBought: Boolean
 )
+

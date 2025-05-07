@@ -14,7 +14,6 @@ import com.example.my_shoplist_application.data.entity.ShoplistEntity
     entities = [ShoplistEntity::class, IngredientEntity::class, ItemSuggestionEntity::class]
 )
 
-
 abstract class AppDataBase : RoomDatabase() {
     abstract fun shoplistDao(): ShoplistDao
     abstract fun ingredientDao(): IngredientsDao

@@ -33,29 +33,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
 
     fun obtainEvent(event: MainScreenEvent) {
         when (event) {
-            is MainScreenEvent.Default -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    runCatching {
-                        mainScreenInteractor.getShoplists().collect { result ->
-                            when (result) {
-                                is Result.Success -> _state.update { it.copy(shoplists = result.data) }
-                                is Result.Error<*, *> -> TODO()
-                            }
-
-                        }
-
-                    }.onFailure { error ->
-                        if (error is CancellationException) {
-                            throw CancellationException()
-                        }
-                        if (BuildConfig.DEBUG) {
-                            Log.e(TAG, "getting shoplist error: $error")
-                        } else {
-                            // Отправка логов об исключении на сервер
-                        }
-                    }
-                }
-            }
+            is MainScreenEvent.Default -> default()
 
             is MainScreenEvent.OnBtnNewShopListClick -> {
                 _state.update { it.copy(isDialogAddingItemVisible = true) }
@@ -68,84 +46,25 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                 viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
             }
 
-            is MainScreenEvent.OnRenameShopListClick -> {
+            is MainScreenEvent.OnRenameShopListClick -> onRename(event)
 
-                viewModelScope.launch(Dispatchers.IO) {
-                    runCatching {
-                        mainScreenInteractor.renameShoplist(
-                            event.shoplistId,
-                            event.shoplistName
-                        )
-                        obtainEvent(MainScreenEvent.Default)
-
-                    }.onFailure { error ->
-                        if (error is CancellationException) {
-                            throw CancellationException()
-                        }
-                        if (BuildConfig.DEBUG) {
-                            Log.e(TAG, "renaming shoplist error: $error")
-                        } else {
-                            // Отправка логов об исключении на сервер
-                        }
-                    }
-                }
-            }
-
-
-            is MainScreenEvent.OnDoubleShopListClick -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    runCatching {
-                        mainScreenInteractor.doubleShoplist(
-                            event.shoplistId
-                        )
-                        obtainEvent(MainScreenEvent.Default)
-                    }.onFailure { error ->
-                        if (error is CancellationException) {
-                            throw CancellationException()
-                        }
-                        if (BuildConfig.DEBUG) {
-                            Log.e(TAG, "doubling shoplist error: $error")
-                        } else {
-                            // Отправка логов об исключении на сервер
-                        }
-                    }
-                }
-
-            }
+            is MainScreenEvent.OnDoubleShopListClick -> onDouble(event)
 
             is MainScreenEvent.OnShopListClick -> {
                 // навигация на экран редактирования списка покупок
             }
 
-            is MainScreenEvent.OnTogglePinListClick -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    runCatching {
-                        mainScreenInteractor.onTogglePinList(
-                            event.shoplistId
-                        )
-                        obtainEvent(MainScreenEvent.Default)
-                    }.onFailure { error ->
-                        if (error is CancellationException) {
-                            throw CancellationException()
-                        }
-                        if (BuildConfig.DEBUG) {
-                            Log.e(TAG, "pinning/unpinning shoplist error: $error")
-                        } else {
-                            // Отправка логов об исключении на сервер
-                        }
-                    }
-                }
-            }
+            is MainScreenEvent.OnTogglePinListClick -> onTogglePin(event)
 
-            MainScreenEvent.OnDeleteShopListClick -> {
+            is MainScreenEvent.OnDeleteShopListClick -> {
                 _state.update { it.copy(isDialogVisible = true) }
             }
 
-            MainScreenEvent.OnDismissDeleteShopListClick -> {
+            is MainScreenEvent.OnDismissDeleteShopListClick -> {
                 _state.update { it.copy(isDialogVisible = false) }
             }
 
-            MainScreenEvent.OnCloseAddingWindow -> {
+            is MainScreenEvent.OnCloseAddingWindow -> {
                 _state.update { it.copy(isDialogAddingItemVisible = false) }
             }
 
@@ -157,6 +76,91 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                             newId.toInt(),
                         )
                     )
+                }
+            }
+        }
+    }
+
+    private fun default() {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                mainScreenInteractor.getShoplists().collect { result ->
+                    when (result) {
+                        is Result.Success -> _state.update { it.copy(shoplists = result.data) }
+                        is Result.Error<*, *> -> TODO()
+                    }
+                }
+
+            }.onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "getting shoplist error: $error")
+                } else {
+                    // Отправка логов об исключении на сервер
+                }
+            }
+        }
+    }
+
+    private fun onRename(event: MainScreenEvent) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                mainScreenInteractor.renameShoplist(
+                    (event as MainScreenEvent.OnRenameShopListClick).shoplistId,
+                    event.shoplistName
+                )
+                obtainEvent(MainScreenEvent.Default)
+
+            }.onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "renaming shoplist error: $error")
+                } else {
+                    // Отправка логов об исключении на сервер
+                }
+            }
+        }
+    }
+
+    private fun onDouble(event: MainScreenEvent.OnDoubleShopListClick) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                mainScreenInteractor.doubleShoplist(
+                    event.shoplistId
+                )
+                obtainEvent(MainScreenEvent.Default)
+            }.onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "doubling shoplist error: $error")
+                } else {
+                    // Отправка логов об исключении на сервер
+                }
+            }
+        }
+    }
+
+    private fun onTogglePin(event: MainScreenEvent.OnTogglePinListClick) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                mainScreenInteractor.onTogglePinList(
+                    event.shoplistId
+                )
+                obtainEvent(MainScreenEvent.Default)
+            }.onFailure { error ->
+                if (error is CancellationException) {
+                    throw CancellationException()
+                }
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "pinning/unpinning shoplist error: $error")
+                } else {
+                    // Отправка логов об исключении на сервер
                 }
             }
         }

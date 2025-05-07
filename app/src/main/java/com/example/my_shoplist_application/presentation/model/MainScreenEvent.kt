@@ -5,7 +5,7 @@ sealed interface MainScreenEvent {
     data object OnBtnNewShopListClick : MainScreenEvent
     data object OnDeleteShopListClick : MainScreenEvent
     data object OnDismissDeleteShopListClick : MainScreenEvent
-    data object OnCloseAddingWindow: MainScreenEvent
+    data object OnCloseAddingWindow : MainScreenEvent
     class OnDeleteShopListConfirmClick(val shoplistId: Int) : MainScreenEvent
     class OnRenameShopListClick(val shoplistId: Int, val shoplistName: String) : MainScreenEvent
     class OnDoubleShopListClick(val shoplistId: Int) : MainScreenEvent

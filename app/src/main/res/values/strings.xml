@@ -13,4 +13,6 @@
     <string name="rename_list">Переименовать список</string>
     <string name="delete_element">Удалить элемент?</string>
     <string name="you_sure_want_delete">Вы уверены, что хотите удалить этот элемент?</string>
+    <string name="Confirm">Применить</string>
+    <string name="make_a_copy">Создать копию</string>
 </resources>

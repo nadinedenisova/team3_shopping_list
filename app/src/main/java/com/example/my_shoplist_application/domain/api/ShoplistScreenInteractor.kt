@@ -17,3 +17,4 @@ interface ShoplistScreenInteractor {
     suspend fun saveSuggestion(name: String)
     suspend fun getSuggestionsByPrefix(prefix: String): List<String>
 }
+
