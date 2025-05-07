@@ -23,7 +23,6 @@ class ShoplistScreenRepositoryImpl(
         choice: Int,
         shoplist: Shoplist = Shoplist(0, "", emptyList()),
         ingredient: Ingredients = Ingredients(0, "", 0F, MeasurementUnit.PCS, 0, false),
-        shoplistName: String = "",
         retryNumber: Int = 0,
 
         ): Result<Unit> {
@@ -49,7 +48,7 @@ class ShoplistScreenRepositoryImpl(
         if (result.isSuccess) return result
 
         return if (retryNumber != 3) {
-            interactWithDb(shoplistId, choice, shoplist, ingredient, shoplistName, retryNumber + 1)
+            interactWithDb(shoplistId, choice, shoplist, ingredient, retryNumber + 1)
         } else {
             result
         }
