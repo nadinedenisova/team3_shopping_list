@@ -77,8 +77,11 @@ class MainScreenRepositoryImpl(
                 2 ->  appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
                 3 ->  appDataBase.shoplistDao().insertShoplist( appDataBase.shoplistDao().getShoplistById(shoplistId))
                 4 ->  appDataBase.shoplistDao().onTogglePinShoplist(shoplistId, ! appDataBase.shoplistDao().getShoplistById(shoplistId).isPinned)
+                else -> {}
             }
+            Unit
         }
+
         if (result.isSuccess) return result
 
         return if (retryNumber != 3) {

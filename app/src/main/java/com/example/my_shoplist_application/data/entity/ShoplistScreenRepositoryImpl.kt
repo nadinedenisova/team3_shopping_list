@@ -42,7 +42,9 @@ class ShoplistScreenRepositoryImpl(
 
                 4 -> appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = false
                 5 -> appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = true
+                else -> {}
             }
+            Unit
         }
         if (result.isSuccess) return result
 
@@ -138,9 +140,9 @@ class ShoplistScreenRepositoryImpl(
         appDataBase.ingredientDao().deleteIngredient(ingredientsDbConvertor.map(ingredient))
     }
 
-    override suspend fun getIngredients(listid: Int): Flow<List<Ingredients>> {
+    override suspend fun getIngredients(listId: Int): Flow<List<Ingredients>> {
         val ingredientEntity =
-            appDataBase.ingredientDao().getIngredientsListId(listid)
+            appDataBase.ingredientDao().getIngredientsListId(listId)
                 .map { igrif -> igrif.map { ingredientsDbConvertor.map(it) } }
         return ingredientEntity
     }
