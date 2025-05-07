@@ -73,10 +73,16 @@ class MainScreenRepositoryImpl(
         ): kotlin.Result<Unit> {
         val result = runCatching {
             when (choice) {
-                1 ->  appDataBase.shoplistDao().deleteShoplist(shoplistId)
-                2 ->  appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
-                3 ->  appDataBase.shoplistDao().insertShoplist( appDataBase.shoplistDao().getShoplistById(shoplistId))
-                4 ->  appDataBase.shoplistDao().onTogglePinShoplist(shoplistId, ! appDataBase.shoplistDao().getShoplistById(shoplistId).isPinned)
+                1 -> appDataBase.shoplistDao().deleteShoplist(shoplistId)
+                2 -> appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
+                3 -> appDataBase.shoplistDao()
+                    .insertShoplist(appDataBase.shoplistDao().getShoplistById(shoplistId))
+
+                4 -> appDataBase.shoplistDao().onTogglePinShoplist(
+                    shoplistId,
+                    !appDataBase.shoplistDao().getShoplistById(shoplistId).isPinned
+                )
+
                 else -> {}
             }
             Unit
@@ -164,6 +170,6 @@ class MainScreenRepositoryImpl(
 
     override suspend fun getShoplistById(id: Int): Flow<Shoplist> = flow {
         val shoplistEntity = appDataBase.shoplistDao().getShoplistById(id)
-        emit( shoplistEntity.let { shoplistDbConvertor.map(it) })
+        emit(shoplistEntity.let { shoplistDbConvertor.map(it) })
     }
 }

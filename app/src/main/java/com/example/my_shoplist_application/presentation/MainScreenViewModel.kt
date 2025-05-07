@@ -123,6 +123,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                         mainScreenInteractor.onTogglePinList(
                             event.shoplistId
                         )
+                        obtainEvent(MainScreenEvent.Default)
                     }.onFailure { error ->
                         if (error is CancellationException) {
                             throw CancellationException()
