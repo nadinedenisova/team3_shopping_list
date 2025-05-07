@@ -28,7 +28,9 @@ class ShoplistScreenRepositoryImpl(
         ): Result<Unit> {
         val result = runCatching {
             when (choice) {
-                CREATE_CHOICE -> appDataBase.shoplistDao().insertShoplist(shoplistDbConvertor.map(shoplist))
+                CREATE_CHOICE -> appDataBase.shoplistDao()
+                    .insertShoplist(shoplistDbConvertor.map(shoplist))
+
                 SAVE_INGREDIENT_TO_DB_CHOICE -> appDataBase.ingredientDao()
                     .insertIngredient(ingredientsDbConvertor.map(ingredient))
 
@@ -39,15 +41,19 @@ class ShoplistScreenRepositoryImpl(
                         .insertIngredientInShoplist(shoplist.id, ingredients.joinToString(","))
                 }
 
-                MAKE_BOUGHT_CHOICE -> appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = false
-                MAKE_NOT_BOUGHT_CHOICE -> appDataBase.ingredientDao().getIngredientById(ingredient.id).isBought = true
+                MAKE_BOUGHT_CHOICE -> appDataBase.ingredientDao()
+                    .getIngredientById(ingredient.id).isBought = false
+
+                MAKE_NOT_BOUGHT_CHOICE -> appDataBase.ingredientDao()
+                    .getIngredientById(ingredient.id).isBought = true
+
                 else -> {}
             }
             Unit
         }
         if (result.isSuccess) return result
 
-        return if (retryNumber != 3) {
+        return if (retryNumber != MAX_RETRY_NUMBER) {
             interactWithDb(shoplistId, choice, shoplist, ingredient, retryNumber + 1)
         } else {
             result
@@ -88,7 +94,11 @@ class ShoplistScreenRepositoryImpl(
         shoplist: Shoplist,
         retryNumber: Int
     ): Result<Unit> {
-        return interactWithDb(ingredient = ingredient, shoplist = shoplist, choice = SAVE_INGREDIENT_TO_SHOPLIST_CHOICE)
+        return interactWithDb(
+            ingredient = ingredient,
+            shoplist = shoplist,
+            choice = SAVE_INGREDIENT_TO_SHOPLIST_CHOICE
+        )
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()
@@ -104,7 +114,11 @@ class ShoplistScreenRepositoryImpl(
         shoplist: Shoplist,
         retryNumber: Int
     ): Result<Unit> {
-        return interactWithDb(ingredient = ingredient, shoplist = shoplist, choice = MAKE_BOUGHT_CHOICE)
+        return interactWithDb(
+            ingredient = ingredient,
+            shoplist = shoplist,
+            choice = MAKE_BOUGHT_CHOICE
+        )
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()
@@ -120,7 +134,11 @@ class ShoplistScreenRepositoryImpl(
         shoplist: Shoplist,
         retryNumber: Int
     ): Result<Unit> {
-        return interactWithDb(ingredient = ingredient, shoplist = shoplist, choice = MAKE_NOT_BOUGHT_CHOICE)
+        return interactWithDb(
+            ingredient = ingredient,
+            shoplist = shoplist,
+            choice = MAKE_NOT_BOUGHT_CHOICE
+        )
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()
@@ -170,6 +188,7 @@ class ShoplistScreenRepositoryImpl(
         private const val SAVE_INGREDIENT_TO_SHOPLIST_CHOICE = 3
         private const val MAKE_BOUGHT_CHOICE = 4
         private const val MAKE_NOT_BOUGHT_CHOICE = 5
+        private const val MAX_RETRY_NUMBER = 3
     }
 }
 

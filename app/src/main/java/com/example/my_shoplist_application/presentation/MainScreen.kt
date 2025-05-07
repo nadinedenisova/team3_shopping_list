@@ -64,7 +64,6 @@ import com.example.my_shoplist_application.presentation.ui.theme.LocalTypography
 import org.koin.androidx.compose.koinViewModel
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     onListClick: (Int) -> Unit
@@ -76,60 +75,10 @@ fun MainScreen(
     Scaffold(
         containerColor = LocalCustomColor.current.background,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(LocalCustomColor.current.background),
-                modifier = Modifier.fillMaxWidth(),
-                title = {
-
-                },
-                navigationIcon = {
-                    Row(
-                        modifier = Modifier
-                            //.clickable(onClick = onBackClick)
-                            .padding(horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrowback),
-                            contentDescription = stringResource(R.string.back),
-                            tint = LocalCustomColor.current.blueColor
-                        )
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            stringResource(R.string.back),
-                            style = LocalTypography.current.h3,
-                            color = LocalCustomColor.current.blueColor
-                        )
-                    }
-                }
-            )
+            TopBar()
         },
-        floatingActionButton = {// кнопка добавить снизу
-            FloatingActionButton(
-                onClick = { viewModel.obtainEvent(MainScreenEvent.OnBtnNewShopListClick) },
-                shape = CircleShape,
-                elevation = FloatingActionButtonDefaults.elevation(0.dp)
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .border(
-                            2.dp,
-                            LocalCustomColor.current.blueColor,
-                            CircleShape
-                        ),
-                    shape = CircleShape,
-                    color = LocalCustomColor.current.background,
-                    content = {}
-                )
-
-                Icon(
-                    modifier = Modifier.size(18.dp),
-                    painter = painterResource(id = R.drawable.add),
-                    contentDescription = stringResource(R.string.add_list),
-                    tint = LocalCustomColor.current.blueColor
-                )
-            }
+        floatingActionButton = {
+            AddingButton(viewModel)
         },
         floatingActionButtonPosition = FabPosition.Center
     ) { padding ->
@@ -147,60 +96,7 @@ fun MainScreen(
     }
 
     if (mainScreenState.isDialogVisible && selectedListForDelete != null) {
-        AlertDialog(
-            onDismissRequest = {
-                viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.delete_element),
-                    style = LocalTypography.current.h3,
-                    color = LocalCustomColor.current.textColor
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.you_sure_want_delete),
-                    style = LocalTypography.current.h3,
-                    color = LocalCustomColor.current.textColor
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = { /*удалить элемент */
-                        viewModel.obtainEvent(
-                            MainScreenEvent.OnDeleteShopListConfirmClick(
-                                selectedListForDelete!!.id
-                            )
-
-                        )
-                        viewModel.obtainEvent(MainScreenEvent.Default)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = LocalCustomColor.current.blueColor
-                    )
-                ) {
-                    Text(
-                        stringResource(R.string.delete),
-                        style = LocalTypography.current.h3,
-                        color = LocalCustomColor.current.white
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
-                    }
-                ) {
-                    Text(
-                        stringResource(R.string.cancel),
-                        style = LocalTypography.current.h3,
-                        color = LocalCustomColor.current.blueColor
-                    )
-                }
-            }
-        )
+        DeletingAlertWindow(viewModel, selectedListForDelete)
     }
 
     if (mainScreenState.isDialogAddingItemVisible) {
@@ -213,7 +109,7 @@ fun MainScreen(
 }
 
 @Composable
-fun DialogAddNameList(
+private fun DialogAddNameList(
     viewModel: MainScreenViewModel,
     onListClick: (Int) -> Unit,
     onDismiss: () -> Unit,
@@ -274,7 +170,7 @@ fun DialogAddNameList(
 
 
 @Composable
-fun ShopList(
+private fun ShopList(
     viewModel: MainScreenViewModel,
     lists: List<Shoplist>,
     modifier: Modifier = Modifier,
@@ -333,16 +229,12 @@ fun ShopList(
             viewModel = viewModel,
             currentName = selectedList!!.shoplistName,
             list = selectedList!!,
-            onRename = {
-                // TODO: обработка переименования
-                showDialog = false
-            },
-            onCopy = {
-                // TODO: Обработка копирования
+            onProcess = {
                 showDialog = false
             },
             onDismiss = { showDialog = false },
         )
+
     }
 }
 
@@ -353,8 +245,7 @@ fun ListOptionsDialog(
     viewModel: MainScreenViewModel,
     currentName: String,
     list: Shoplist,
-    onRename: (String) -> Unit,
-    onCopy: (String) -> Unit,
+    onProcess: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var text by remember { mutableStateOf(currentName) }
@@ -383,7 +274,7 @@ fun ListOptionsDialog(
 
                 Button(
                     onClick = {
-                        onRename(
+                        onProcess(
                             viewModel.obtainEvent(
                                 MainScreenEvent.OnRenameShopListClick(
                                     list.id,
@@ -404,7 +295,7 @@ fun ListOptionsDialog(
                 }
                 Button(
                     onClick = {
-                        onCopy(
+                        onProcess(
                             viewModel.obtainEvent(
                                 MainScreenEvent.OnDoubleShopListClick(
                                     list.id
@@ -434,9 +325,129 @@ fun ListOptionsDialog(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar() {
+    TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(LocalCustomColor.current.background),
+        modifier = Modifier.fillMaxWidth(),
+        title = {
+
+        },
+        navigationIcon = {
+            Row(
+                modifier = Modifier
+                    //.clickable(onClick = onBackClick)
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.arrowback),
+                    contentDescription = stringResource(R.string.back),
+                    tint = LocalCustomColor.current.blueColor
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                    stringResource(R.string.back),
+                    style = LocalTypography.current.h3,
+                    color = LocalCustomColor.current.blueColor
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun AddingButton(viewModel: MainScreenViewModel) {
+    FloatingActionButton(
+        onClick = { viewModel.obtainEvent(MainScreenEvent.OnBtnNewShopListClick) },
+        shape = CircleShape,
+        elevation = FloatingActionButtonDefaults.elevation(0.dp)
+    ) {
+        Surface(
+            modifier = Modifier
+                .size(56.dp)
+                .border(
+                    2.dp,
+                    LocalCustomColor.current.blueColor,
+                    CircleShape
+                ),
+            shape = CircleShape,
+            color = LocalCustomColor.current.background,
+            content = {}
+        )
+
+        Icon(
+            modifier = Modifier.size(18.dp),
+            painter = painterResource(id = R.drawable.add),
+            contentDescription = stringResource(R.string.add_list),
+            tint = LocalCustomColor.current.blueColor
+        )
+    }
+}
+
+@Composable
+private fun DeletingAlertWindow(viewModel: MainScreenViewModel, selectedListForDelete: Shoplist?) {
+    AlertDialog(
+        onDismissRequest = {
+            viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
+        },
+        title = {
+            Text(
+                text = stringResource(R.string.delete_element),
+                style = LocalTypography.current.h3,
+                color = LocalCustomColor.current.textColor
+            )
+        },
+        text = {
+            Text(
+                stringResource(R.string.you_sure_want_delete),
+                style = LocalTypography.current.h3,
+                color = LocalCustomColor.current.textColor
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = { /*удалить элемент */
+                    viewModel.obtainEvent(
+                        MainScreenEvent.OnDeleteShopListConfirmClick(
+                            selectedListForDelete!!.id
+                        )
+
+                    )
+                    viewModel.obtainEvent(MainScreenEvent.Default)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LocalCustomColor.current.blueColor
+                )
+            ) {
+                Text(
+                    stringResource(R.string.delete),
+                    style = LocalTypography.current.h3,
+                    color = LocalCustomColor.current.white
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
+                }
+            ) {
+                Text(
+                    stringResource(R.string.cancel),
+                    style = LocalTypography.current.h3,
+                    color = LocalCustomColor.current.blueColor
+                )
+            }
+        }
+    )
+}
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SwipeableListItem(
+private fun SwipeableListItem(
     list: Shoplist,
     onLongPress: (Shoplist) -> Unit,
     onPin: () -> Unit,
@@ -454,7 +465,6 @@ fun SwipeableListItem(
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Фон с кнопками при свайпе
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -479,7 +489,6 @@ fun SwipeableListItem(
                     style = LocalTypography.current.h3
                 )
             }
-
             Button(
                 onClick = {
                     onDelete()
@@ -495,8 +504,6 @@ fun SwipeableListItem(
                 Text(stringResource(R.string.delete), style = LocalTypography.current.h3)
             }
         }
-
-        // Основное содержимое элемента
         Surface(
             color = LocalCustomColor.current.background,
             modifier = Modifier
@@ -506,11 +513,9 @@ fun SwipeableListItem(
                     detectHorizontalDragGestures(
                         onDragEnd = {
                             if (offsetX < -150f) {
-                                // Показываем кнопки
                                 offsetX = -300f
                                 isRevealed = true
                             } else {
-                                // Скрываем кнопки
                                 offsetX = 0f
                                 isRevealed = false
                             }
@@ -533,10 +538,8 @@ fun SwipeableListItem(
                         onClick = { onClick(list.id) /*действие при обычном клике*/ },
                         onLongClick = { onLongPress(list) }  // Долгое нажатие
                     ),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically) {
 
-                ) {
-                // Значок закрепления
                 if (list.isPinned) {
                     Icon(
                         painter = painterResource(id = R.drawable.pushpin),
@@ -546,7 +549,6 @@ fun SwipeableListItem(
                     )
                 }
 
-                // Название списка
                 Text(
                     text = list.shoplistName,
                     style = LocalTypography.current.h3,
@@ -555,7 +557,6 @@ fun SwipeableListItem(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Стрелка
                 Icon(
                     painter = painterResource(R.drawable.chevron),
                     contentDescription = "Открыть",
@@ -565,3 +566,8 @@ fun SwipeableListItem(
         }
     }
 }
+
+
+
+
+

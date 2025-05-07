@@ -24,3 +24,4 @@ class App : Application() {
         const val KEY_THEME_MODE = "key_theme_mode"
     }
 }
+

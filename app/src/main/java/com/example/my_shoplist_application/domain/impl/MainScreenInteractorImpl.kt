@@ -3,8 +3,8 @@ package com.example.my_shoplist_application.domain.impl
 import com.example.my_shoplist_application.domain.api.MainScreenInteractor
 import com.example.my_shoplist_application.domain.db.MainScreenListError
 import com.example.my_shoplist_application.domain.db.MainScreenRepository
-import com.example.my_shoplist_application.domain.models.Shoplist
 import com.example.my_shoplist_application.domain.db.Result
+import com.example.my_shoplist_application.domain.models.Shoplist
 import kotlinx.coroutines.flow.Flow
 
 class MainScreenInteractorImpl(private val mainScreenRepository: MainScreenRepository) :
@@ -17,7 +17,10 @@ class MainScreenInteractorImpl(private val mainScreenRepository: MainScreenRepos
         return mainScreenRepository.deleteShoplist(shoplistId)
     }
 
-    override suspend fun renameShoplist(shoplistId: Int, shoplistName: String): kotlin.Result<Unit> {
+    override suspend fun renameShoplist(
+        shoplistId: Int,
+        shoplistName: String
+    ): kotlin.Result<Unit> {
         return mainScreenRepository.renameShoplist(shoplistId, shoplistName)
     }
 
@@ -28,10 +31,6 @@ class MainScreenInteractorImpl(private val mainScreenRepository: MainScreenRepos
     override suspend fun onTogglePinList(shoplistId: Int): kotlin.Result<Unit> {
         return mainScreenRepository.onToggleShoplist(shoplistId)
     }
-
-   /* override suspend fun getShoplist(): Flow<List<Shoplist>> {
-        return mainScreenRepository.getShoplist()
-    }*/
 
     override suspend fun getShoplistById(id: Int): Flow<Shoplist?> {
         return mainScreenRepository.getShoplistById(id)

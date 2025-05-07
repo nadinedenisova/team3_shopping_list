@@ -57,34 +57,46 @@ class ShoplistScreenViewModel(
 
             is ShoplistScreenEvent.OnAddingIngredientBtnClick -> onAddingIngredientsBtnClick(event)
 
-            is ShoplistScreenEvent.OnContextMenuIconClick -> {// кнопка вызова контекстного меню три точки вверху экрана
+            is ShoplistScreenEvent.OnContextMenuIconClick -> {
+                // кнопка вызова контекстного меню три точки вверху экрана
                 _state.update {
                     it.copy(showContextMenu = true, contextMenuPosition = event.position)
                 }
             }
 
-            is ShoplistScreenEvent.OnClearBtnInContextMenuClick -> TODO() // кнопка очистки списка в контекстном меню (нет в фигме, есть в ТЗ)
-            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> TODO() // кнопка удаления списка в контекстном меню (нет в фигме, есть в ТЗ)
-            is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO() // кнопка переименования списка в контекстном меню (нет в фигме, есть в ТЗ)
-            is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO() // кнопка сортировки списка в алфавитном порядке в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnClearBtnInContextMenuClick -> TODO()
+            // кнопка очистки списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> TODO()
+            // кнопка удаления списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnRenameBtnInContextMenuClick -> TODO()
+            // кнопка переименования списка в контекстном меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> TODO()
+            // кнопка сортировки списка в алфавитном порядке в контекстном меню (нет в фигме, есть в ТЗ)
 
-            is ShoplistScreenEvent.OnDeleteIngredientSwipeClick -> { // кнопка удаления ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnDeleteIngredientSwipeClick -> {
+                // кнопка удаления ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
                 viewModelScope.launch {
                     shoplistScreenInteractor.deleteIngredient(ingredient = event.ingredient)
                 }
             }
 
-            is ShoplistScreenEvent.OnEditIngredientSwipeClick -> TODO() // кнопка редактирования ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
-            is ShoplistScreenEvent.OnIngredientUnitClick -> TODO() // кнопка на панели выбора единицы измерения в статусе экрана "добавление ингредиента" (после нажатия на кнопку добавить продукт)
-            is ShoplistScreenEvent.OnMinusIngredientQuantityClick -> TODO() //там же, кнопка "минус количества"
-            is ShoplistScreenEvent.OnPlusIngredientQuantityClick -> TODO() //там же, кнопка "плюс количества"
+            is ShoplistScreenEvent.OnEditIngredientSwipeClick -> TODO()
+            // кнопка редактирования ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
+            is ShoplistScreenEvent.OnIngredientUnitClick -> TODO()
+            // кнопка на панели выбора единицы измерения в статусе экрана "добавление ингредиента"
+            // (после нажатия на кнопку добавить продукт)
+            is ShoplistScreenEvent.OnMinusIngredientQuantityClick -> TODO()
+            //там же, кнопка "минус количества"
+            is ShoplistScreenEvent.OnPlusIngredientQuantityClick -> TODO()
+            //там же, кнопка "плюс количества"
 
             is ShoplistScreenEvent.OnReadyIngredientBtnClick -> onReadyIngredientsBtnClick(event)
 
             is ShoplistScreenEvent.OnIsBoughtIngredientClick -> { // флажок товар "куплен" слева от ингредиента
                 viewModelScope.launch {
                     runCatching {
-                        shoplistScreenInteractor.updateItem(event.ingredient.copy(isBought = !event.ingredient.isBought))
+                        shoplistScreenInteractor.updateItem(
+                            event.ingredient.copy(isBought = !event.ingredient.isBought))
                     }
                 }
             }

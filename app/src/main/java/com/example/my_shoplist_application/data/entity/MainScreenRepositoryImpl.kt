@@ -57,7 +57,7 @@ class MainScreenRepositoryImpl(
         }
         if (result.isSuccess) return result
 
-        return if (retryNumber != 3) {
+        return if (retryNumber != MAX_RETRY_NUMBER) {
             getShoplistsFromDb(retryNumber + 1)
         } else {
             result
@@ -100,7 +100,7 @@ class MainScreenRepositoryImpl(
 
         if (result.isSuccess) return result
 
-        return if (retryNumber != 3) {
+        return if (retryNumber != MAX_RETRY_NUMBER) {
             interactWithDb(shoplistId, choice, shoplistName, retryNumber + 1)
         } else {
             result
@@ -180,6 +180,7 @@ class MainScreenRepositoryImpl(
         private const val RENAME_CHOICE = 2
         private const val DOUBLE_CHOICE = 3
         private const val TOGGLE_PIN_CHOICE = 4
+        private const val MAX_RETRY_NUMBER = 3
     }
 
 }
