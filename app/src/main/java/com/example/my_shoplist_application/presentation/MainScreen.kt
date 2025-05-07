@@ -241,7 +241,6 @@ private fun ShopList(
 
 @Composable
 fun ListOptionsDialog(
-    // Диалог при долгом нажатии
     viewModel: MainScreenViewModel,
     currentName: String,
     list: Shoplist,
@@ -249,9 +248,11 @@ fun ListOptionsDialog(
     onDismiss: () -> Unit,
 ) {
     var text by remember { mutableStateOf(currentName) }
+
     Dialog(onDismissRequest = { onDismiss() }) {
         Surface {
             Column(modifier = Modifier.padding(16.dp)) {
+
                 Text(text = "Выберите действие")
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -260,26 +261,20 @@ fun ListOptionsDialog(
                     value = text,
                     onValueChange = { text = it },
                     label = {
-                        Text(
-                            text = stringResource(R.string.rename_list),
-                            style = LocalTypography.current.h3,
-                            color = LocalCustomColor.current.textColor
-                        )
+                        TextLabel(stringResource(R.string.rename_list))
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = LocalTypography.current.h3
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
                     onClick = {
                         onProcess(
                             viewModel.obtainEvent(
-                                MainScreenEvent.OnRenameShopListClick(
-                                    list.id,
-                                    text
-                                )
+                                MainScreenEvent.OnRenameShopListClick(list.id, text)
                             ).toString()
                         )
                     },
@@ -287,19 +282,14 @@ fun ListOptionsDialog(
                         containerColor = LocalCustomColor.current.blueColor
                     )
                 ) {
-                    Text(
-                        "Применить",
-                        style = LocalTypography.current.h3,
-                        color = LocalCustomColor.current.white
-                    )
+                    TextLabelWhite(stringResource(R.string.Confirm))
                 }
+
                 Button(
                     onClick = {
                         onProcess(
                             viewModel.obtainEvent(
-                                MainScreenEvent.OnDoubleShopListClick(
-                                    list.id
-                                )
+                                MainScreenEvent.OnDoubleShopListClick(list.id)
                             ).toString()
                         )
                     },
@@ -307,22 +297,42 @@ fun ListOptionsDialog(
                         containerColor = LocalCustomColor.current.blueColor
                     )
                 ) {
-                    Text(
-                        "Создать копию",
-                        style = LocalTypography.current.h3,
-                        color = LocalCustomColor.current.white
-                    )
+                    TextLabelWhite(stringResource(R.string.make_a_copy))
                 }
+
                 TextButton(onClick = { onDismiss() }) {
-                    Text(
-                        stringResource(R.string.cancel),
-                        style = LocalTypography.current.h3,
-                        color = LocalCustomColor.current.blueColor
-                    )
+                    TextLabelBlue(stringResource(R.string.cancel))
                 }
             }
         }
     }
+}
+
+@Composable
+private fun TextLabel(text: String) {
+    Text(
+        text = text,
+        style = LocalTypography.current.h3,
+        color = LocalCustomColor.current.textColor
+    )
+}
+
+@Composable
+private fun TextLabelWhite(text: String) {
+    Text(
+        text = text,
+        style = LocalTypography.current.h3,
+        color = LocalCustomColor.current.white
+    )
+}
+
+@Composable
+private fun TextLabelBlue(text: String) {
+    Text(
+        text = text,
+        style = LocalTypography.current.h3,
+        color = LocalCustomColor.current.blueColor
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
