@@ -14,7 +14,6 @@ interface MainScreenRepository {
 
     suspend fun doubleShoplist(shoplistId: Int, retryNumber: Int = 0): kotlin.Result<Unit>
     suspend fun onToggleShoplist(shoplistId: Int, retryNumber: Int = 0): kotlin.Result<Unit>
-    suspend fun getShoplist(retryNumber: Int = 0): Flow<List<Shoplist>>
     suspend fun saveShopList(list:Shoplist): Long
     suspend fun getShoplistById(id: Int): Flow<Shoplist>
 }

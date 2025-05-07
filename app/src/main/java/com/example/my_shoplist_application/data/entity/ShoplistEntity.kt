@@ -18,3 +18,4 @@ data class ShoplistEntity(
     @ColumnInfo(name = "shoplist_is_pinned")
     var isPinned: Boolean
 )
+

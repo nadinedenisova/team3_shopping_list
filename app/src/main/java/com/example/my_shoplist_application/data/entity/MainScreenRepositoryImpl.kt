@@ -2,7 +2,6 @@ package com.example.my_shoplist_application.data.entity
 
 import android.database.sqlite.SQLiteException
 import com.example.my_shoplist_application.BuildConfig
-import com.example.my_shoplist_application.common.InvalidDatabaseStateException
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
 import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.MainScreenListError
@@ -17,6 +16,7 @@ class MainScreenRepositoryImpl(
     private val appDataBase: AppDataBase,
     private val shoplistDbConvertor: ShoplistDbConvertor
 ) : MainScreenRepository {
+
 
     override suspend fun getShoplists(retryNumber: Int): Flow<Result<List<Shoplist>, MainScreenListError>> =
         flow {
@@ -73,9 +73,9 @@ class MainScreenRepositoryImpl(
         ): kotlin.Result<Unit> {
         val result = runCatching {
             when (choice) {
-                1 -> appDataBase.shoplistDao().deleteShoplist(shoplistId)
-                2 -> appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
-                3 -> {
+                DELETE_CHOICE -> appDataBase.shoplistDao().deleteShoplist(shoplistId)
+                RENAME_CHOICE -> appDataBase.shoplistDao().renameShoplist(shoplistId, shoplistName)
+                DOUBLE_CHOICE -> {
                     val oldShoplistEntity = appDataBase.shoplistDao().getShoplistById(shoplistId)
                     val newShopListEntity = ShoplistEntity(
                         shoplistId = oldShoplistEntity.shoplistId + 1,
@@ -88,7 +88,7 @@ class MainScreenRepositoryImpl(
                         .insertShoplist(newShopListEntity)
                 }
 
-                4 -> appDataBase.shoplistDao().onTogglePinShoplist(
+                TOGGLE_PIN_CHOICE -> appDataBase.shoplistDao().onTogglePinShoplist(
                     shoplistId,
                     !appDataBase.shoplistDao().getShoplistById(shoplistId).isPinned
                 )
@@ -108,7 +108,7 @@ class MainScreenRepositoryImpl(
     }
 
     override suspend fun deleteShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
-        return interactWithDb(shoplistId, 1)
+        return interactWithDb(shoplistId, DELETE_CHOICE)
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()
@@ -125,7 +125,7 @@ class MainScreenRepositoryImpl(
         retryNumber: Int
     ): kotlin.Result<Unit> {
 
-        return interactWithDb(shoplistId, 2, shoplistName)
+        return interactWithDb(shoplistId, RENAME_CHOICE, shoplistName)
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()
@@ -138,7 +138,7 @@ class MainScreenRepositoryImpl(
 
     override suspend fun doubleShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
 
-        return interactWithDb(shoplistId, 3)
+        return interactWithDb(shoplistId, DOUBLE_CHOICE)
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()
@@ -150,7 +150,7 @@ class MainScreenRepositoryImpl(
     }
 
     override suspend fun onToggleShoplist(shoplistId: Int, retryNumber: Int): kotlin.Result<Unit> {
-        return interactWithDb(shoplistId, 4)
+        return interactWithDb(shoplistId, TOGGLE_PIN_CHOICE)
             .onFailure { error ->
                 if (error is CancellationException) {
                     throw CancellationException()
@@ -165,14 +165,6 @@ class MainScreenRepositoryImpl(
         return shoplists.map { shoplist -> shoplistDbConvertor.map(shoplist) }
     }
 
-    override suspend fun getShoplist(retryNumber: Int): Flow<List<Shoplist>> = flow {
-        val result = runCatching {
-            val shoplists = appDataBase.shoplistDao().getShoplists()
-            if (shoplists.isEmpty()) {
-                throw InvalidDatabaseStateException(message = "no shoplists yet")
-            }
-        }
-    }
 
     override suspend fun saveShopList(list: Shoplist): Long {
         return appDataBase.shoplistDao().insertList(shoplistDbConvertor.map(list))
@@ -182,4 +174,12 @@ class MainScreenRepositoryImpl(
         val shoplistEntity = appDataBase.shoplistDao().getShoplistById(id)
         emit(shoplistEntity.let { shoplistDbConvertor.map(it) })
     }
+
+    companion object {
+        private const val DELETE_CHOICE = 1
+        private const val RENAME_CHOICE = 2
+        private const val DOUBLE_CHOICE = 3
+        private const val TOGGLE_PIN_CHOICE = 4
+    }
+
 }

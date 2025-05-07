@@ -29,9 +29,9 @@ class MainScreenInteractorImpl(private val mainScreenRepository: MainScreenRepos
         return mainScreenRepository.onToggleShoplist(shoplistId)
     }
 
-    override suspend fun getShoplist(): Flow<List<Shoplist>> {
+   /* override suspend fun getShoplist(): Flow<List<Shoplist>> {
         return mainScreenRepository.getShoplist()
-    }
+    }*/
 
     override suspend fun getShoplistById(id: Int): Flow<Shoplist?> {
         return mainScreenRepository.getShoplistById(id)

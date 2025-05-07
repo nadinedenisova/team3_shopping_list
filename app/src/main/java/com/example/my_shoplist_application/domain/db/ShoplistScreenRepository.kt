@@ -6,7 +6,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface ShoplistScreenRepository {
     suspend fun createShoplist(shoplist: Shoplist, retryNumber: Int = 0): kotlin.Result<Unit>
-    suspend fun saveIngredientToDB(ingredient: Ingredients, retryNumber: Int = 0): kotlin.Result<Unit>
+    suspend fun saveIngredientToDB(
+        ingredient: Ingredients,
+        retryNumber: Int = 0
+    ): kotlin.Result<Unit>
 
     suspend fun saveIngredientToShoplist(
         ingredient: Ingredients, shoplist: Shoplist,

@@ -10,7 +10,6 @@ interface MainScreenInteractor {
     suspend fun renameShoplist(shoplistId: Int, shoplistName: String): Result<Unit>
     suspend fun doubleShoplist(shoplistId: Int): Result<Unit>
     suspend fun onTogglePinList(shoplistId: Int): Result<Unit>
-    suspend fun getShoplist(): Flow<List<Shoplist>>
     suspend fun getShoplistById(id: Int): Flow <Shoplist?>
     suspend fun saveShopList(list:Shoplist): Long
 }
