@@ -71,10 +71,7 @@ fun MainScreen(
 ) {
     val viewModel: MainScreenViewModel = koinViewModel()
     val mainScreenState by viewModel.state.collectAsState()
-    var newListName by remember { mutableStateOf("") }
     var selectedListForDelete by remember { mutableStateOf<Shoplist?>(null) }
-
-    val lists = mainScreenState.shoplists
 
     Scaffold(
         containerColor = LocalCustomColor.current.background,
@@ -108,9 +105,8 @@ fun MainScreen(
             )
         },
         floatingActionButton = {// кнопка добавить снизу
-            val shoplistJson = null
             FloatingActionButton(
-                onClick = { viewModel.obtainEvent(MainScreenEvent.OnDeleteShopListClick) },
+                onClick = { viewModel.obtainEvent(MainScreenEvent.OnBtnNewShopListClick) },
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {
@@ -140,11 +136,11 @@ fun MainScreen(
 
         ShopList(
             viewModel,
-            lists,
+            mainScreenState.shoplists,
             Modifier.padding(padding),
             onDeleteRequest = { list ->
                 selectedListForDelete = list
-                viewModel.obtainEvent(MainScreenEvent.OnDeleteShopListConfirmClick(list.id))
+                viewModel.obtainEvent(MainScreenEvent.OnDeleteShopListClick)
             },
             onClick = onListClick
         )
@@ -176,7 +172,9 @@ fun MainScreen(
                             MainScreenEvent.OnDeleteShopListConfirmClick(
                                 selectedListForDelete!!.id
                             )
+
                         )
+                        viewModel.obtainEvent(MainScreenEvent.Default)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LocalCustomColor.current.blueColor
@@ -205,11 +203,11 @@ fun MainScreen(
         )
     }
 
-    if (mainScreenState.isDialogVisible) {
+    if (mainScreenState.isDialogAddingItemVisible) {
         DialogAddNameList(
             viewModel = viewModel,
             onListClick = onListClick,
-            onDismiss = { viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick) }
+            onDismiss = { viewModel.obtainEvent(MainScreenEvent.OnCloseAddingWindow) }
         )
     }
 }
@@ -257,7 +255,8 @@ fun DialogAddNameList(
                 onClick = {
                     if (newListName.isNotBlank()) {
                         viewModel.obtainEvent(MainScreenEvent.Add(newListName))
-                        viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
+                        viewModel.obtainEvent(MainScreenEvent.OnCloseAddingWindow)
+                        viewModel.obtainEvent(MainScreenEvent.Default)
                         newListName = ""
                     }
                 }
@@ -314,7 +313,7 @@ fun ShopList(
                     onLongPress = { openDialog(list) },
                     onPin = { viewModel.obtainEvent(MainScreenEvent.OnTogglePinListClick(list.id)) },
                     onDelete = { onDeleteRequest(list) },
-                    onClick =  onClick
+                    onClick = onClick
                 )
                 HorizontalDivider()
             }

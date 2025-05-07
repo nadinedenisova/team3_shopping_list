@@ -58,14 +58,14 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
             }
 
             is MainScreenEvent.OnBtnNewShopListClick -> {
-                // навигация на экран создания списка покупок
+                _state.update { it.copy(isDialogAddingItemVisible = true) }
             }
 
             is MainScreenEvent.OnDeleteShopListConfirmClick -> {
                 viewModelScope.launch {
                     _state.update { it.copy(isDialogVisible = false) }
                 }
-                //viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
+                viewModelScope.launch(Dispatchers.IO) { mainScreenInteractor.deleteShoplist(event.shoplistId) }
             }
 
             is MainScreenEvent.OnRenameShopListClick -> {
@@ -143,6 +143,10 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
 
             MainScreenEvent.OnDismissDeleteShopListClick -> {
                 _state.update { it.copy(isDialogVisible = false) }
+            }
+
+            MainScreenEvent.OnCloseAddingWindow -> {
+                _state.update { it.copy(isDialogAddingItemVisible = false) }
             }
 
             is MainScreenEvent.Add -> {
