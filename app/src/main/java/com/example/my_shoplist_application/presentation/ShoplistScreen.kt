@@ -490,14 +490,16 @@ fun PanelAddDown(
         ) {
             Icon(
                 painter = painterResource(R.drawable.button_mines),
-                contentDescription = null
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onBackground
             )
         }
         Text(
             "${state.newItemQuantity}",
             modifier = Modifier.width(32.dp),
             textAlign = TextAlign.Center,
-            style = LocalTypography.current.h3
+            style = LocalTypography.current.h3,
+            color = LocalCustomColor.current.textColor
         )
         IconButton(
             modifier = Modifier
@@ -513,11 +515,11 @@ fun PanelAddDown(
         ) {
             Icon(
                 painter = painterResource(R.drawable.button_plus),
-                contentDescription = null
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onBackground
             )
         }
     }
-    //   Spacer(modifier = Modifier.height(8.dp))
 }
 
 @OptIn(ExperimentalFoundationApi::class)

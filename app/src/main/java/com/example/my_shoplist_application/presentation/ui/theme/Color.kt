@@ -1,5 +1,6 @@
 package com.example.my_shoplist_application.presentation.ui.theme
 
+import android.graphics.drawable.Drawable
 import androidx.compose.ui.graphics.Color
 
 val Blue = Color(0xFF007AFF)
