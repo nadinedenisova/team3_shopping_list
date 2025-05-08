@@ -61,4 +61,23 @@ class ShoplistScreenInteractorImpl(private val shoplistScreenRepository: Shoplis
     override suspend fun getSuggestionsByPrefix(prefix: String): List<String> {
         return shoplistScreenRepository.getSuggestionsByPrefix(prefix)
     }
+
+    override suspend fun deleteBoughtItems() {
+        shoplistScreenRepository.deleteBoughtItems()
+    }
+
+    override suspend fun updateAllBoughtStatus(
+        listid: Int,
+        isBought: Boolean
+    ): Flow<List<Ingredients>> {
+        return shoplistScreenRepository.updateAllBoughtStatus(listid, isBought)
+    }
+
+    override fun switchIsChecked(isChecked: Boolean) {
+        shoplistScreenRepository.switchIsChecked(isChecked)
+    }
+
+    override fun getSwitchStatus(): Boolean {
+        return   shoplistScreenRepository.getSwitchStatus()
+    }
 }
