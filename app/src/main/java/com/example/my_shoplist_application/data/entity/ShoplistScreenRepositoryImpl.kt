@@ -3,6 +3,7 @@ package com.example.my_shoplist_application.data.entity
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.data.convertors.IngredientsDbConvertor
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
+import com.example.my_shoplist_application.data.sharedManager.SharedManager
 import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.ShoplistScreenRepository
 import com.example.my_shoplist_application.domain.models.Ingredients
@@ -15,14 +16,15 @@ import kotlin.coroutines.cancellation.CancellationException
 class ShoplistScreenRepositoryImpl(
     private val appDataBase: AppDataBase,
     private val shoplistDbConvertor: ShoplistDbConvertor,
-    private val ingredientsDbConvertor: IngredientsDbConvertor
+    private val ingredientsDbConvertor: IngredientsDbConvertor,
+    private val sharedManager: SharedManager
 ) : ShoplistScreenRepository {
 
     private suspend fun interactWithDb(
         shoplistId: Int = 0,
         choice: Int,
         shoplist: Shoplist = Shoplist(0, "", emptyList()),
-        ingredient: Ingredients = Ingredients(0, "", 0F, MeasurementUnit.PCS, 0, false),
+        ingredient: Ingredients = Ingredients(0, "", 0, MeasurementUnit.PCS, 0, false),
         retryNumber: Int = 0,
 
         ): Result<Unit> {
@@ -160,7 +162,7 @@ class ShoplistScreenRepositoryImpl(
     override suspend fun getIngredients(listId: Int): Flow<List<Ingredients>> {
         val ingredientEntity =
             appDataBase.ingredientDao().getIngredientsListId(listId)
-                .map { igrif -> igrif.map { ingredientsDbConvertor.map(it) } }
+                .map { item -> item.map { ingredientsDbConvertor.map(it) } }
         return ingredientEntity
     }
 
@@ -180,6 +182,24 @@ class ShoplistScreenRepositoryImpl(
 
     override suspend fun getSuggestionsByPrefix(prefix: String): List<String> {
         return appDataBase.insertSuggestion().getSuggestionsByPrefix(prefix)
+    }
+
+    override suspend fun deleteBoughtItems() {
+        appDataBase.ingredientDao().deleteBoughtItems()
+    }
+
+    override suspend fun updateAllBoughtStatus(listid: Int, isBought: Boolean): Flow<List<Ingredients>> {
+        appDataBase.ingredientDao().updateAllBoughtStatus(listid,isBought)
+        val list = appDataBase.ingredientDao().getIngredientsListId(listid).map { it -> it.map { ingredientsDbConvertor.map(it) } }
+        return list
+    }
+
+    override fun switchIsChecked(isChecked: Boolean) {
+        sharedManager.putSwitchStatus(isChecked)
+    }
+
+    override fun getSwitchStatus(): Boolean {
+        return sharedManager.getSwitchStatus()
     }
 
     companion object {

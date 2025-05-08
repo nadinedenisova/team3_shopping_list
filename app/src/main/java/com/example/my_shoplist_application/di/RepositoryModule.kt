@@ -15,7 +15,7 @@ val repositoryModule = module {
     }
 
     single<ShoplistScreenRepository> {
-        ShoplistScreenRepositoryImpl(get(), get(), get())
+        ShoplistScreenRepositoryImpl(get(), get(), get(), get())
     }
 
     factory { IngredientsDbConvertor() }

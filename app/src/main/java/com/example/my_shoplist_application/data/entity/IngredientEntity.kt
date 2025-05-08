@@ -22,7 +22,7 @@ data class IngredientEntity(
     @ColumnInfo(name = "ingredient_name")
     val ingredientName: String,
     @ColumnInfo(name = "ingredient_quantity")
-    val ingredientQuantity: Float,
+    val ingredientQuantity: Int,
     @ColumnInfo(name = "ingredient_unit")
     val ingredientUnit: MeasurementUnit,
     @ColumnInfo(name = "listId")
