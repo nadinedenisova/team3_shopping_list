@@ -3,6 +3,7 @@ package com.example.my_shoplist_application.data.entity
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.data.convertors.IngredientsDbConvertor
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
+import com.example.my_shoplist_application.data.shared.SharedManager
 import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.ShoplistScreenRepository
 import com.example.my_shoplist_application.domain.models.Ingredients
@@ -15,7 +16,8 @@ import kotlin.coroutines.cancellation.CancellationException
 class ShoplistScreenRepositoryImpl(
     private val appDataBase: AppDataBase,
     private val shoplistDbConvertor: ShoplistDbConvertor,
-    private val ingredientsDbConvertor: IngredientsDbConvertor
+    private val ingredientsDbConvertor: IngredientsDbConvertor,
+    private val sharedManager: SharedManager
 ) : ShoplistScreenRepository {
 
     private suspend fun interactWithDb(
@@ -173,16 +175,12 @@ class ShoplistScreenRepositoryImpl(
         return list
     }
 
-//    override suspend fun updateAllBoughtStatus2(shopListId: Int, isBought: Boolean) {
-//        appDataBase.ingredientDao().updateAllBoughtStatus(shopListId, isBought)
-//    }
-//
-//    override fun getIngredients2(shopListId: Int): Flow<List<Ingredients>> {
-//        return ingredientsDao.getIngredientsByShopListId(shopListId)
-//    }
-//
-//    override suspend fun updateBoughtStatusAndGetIngredients(shopListId: Int, isBought: Boolean): Flow<List<Ingredients>> {
-//        updateAllBoughtStatus2(shopListId, isBought)
-//        return getIngredients2(shopListId)
-//    }
+    override fun switchIsChecked(isChecked: Boolean) {
+        sharedManager.putSwitchStatus(isChecked)
+    }
+
+    override fun getSwitchStatus(): Boolean {
+        return sharedManager.getSwitchStatus()
+    }
+
 }

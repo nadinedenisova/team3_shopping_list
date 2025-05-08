@@ -6,8 +6,10 @@ import androidx.compose.ui.unit.sp
 
 data class CustomTypography(
     val h1: TextStyle,
+    val h2: TextStyle,
     val h3: TextStyle,
-    val h2: TextStyle
+    val h4 : TextStyle
+
 )
 val Typography = CustomTypography(
     h1 = TextStyle(
@@ -30,5 +32,12 @@ val Typography = CustomTypography(
         fontSize = 17.sp,
         lineHeight = 22.sp,
         letterSpacing = (-0.41).sp
+    ),
+    h4 = TextStyle(
+        fontFamily = sfProDisplayFontFamily /*FontFamily(Font(R.font.sf_pro_display_regular))*/,
+        fontWeight = FontWeight.Medium,
+        fontSize = 13.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-0.08).sp
     )
 )

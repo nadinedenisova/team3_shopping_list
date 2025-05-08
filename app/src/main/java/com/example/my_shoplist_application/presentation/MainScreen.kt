@@ -241,12 +241,12 @@ fun DialogAddNameList(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Создать новый список", style = LocalTypography.current.h3) },
+        title = { Text("Создать новый список", style = LocalTypography.current.h4) },
         text = {
             OutlinedTextField(
                 value = newListName,
                 onValueChange = { newListName = it },
-                label = { Text("Название списка", style = LocalTypography.current.h3) },
+                label = { Text("Название списка", style = LocalTypography.current.h4) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = LocalTypography.current.h3
@@ -260,14 +260,16 @@ fun DialogAddNameList(
                         viewModel.obtainEvent(MainScreenEvent.OnDismissDeleteShopListClick)
                         newListName = ""
                     }
-                }
+                },colors = ButtonDefaults.buttonColors(
+                    containerColor = LocalCustomColor.current.blueColor
+                )
             ) {
                 Text("Создать", style = LocalTypography.current.h3)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Отмена", style = LocalTypography.current.h3)
+                Text("Отмена", style = LocalTypography.current.h3, color = LocalCustomColor.current.blueColor)
             }
         }
     )
@@ -372,7 +374,7 @@ fun ListOptionsDialog(
                     label = {
                         Text(
                             text = stringResource(R.string.rename_list),
-                            style = LocalTypography.current.h3,
+                            style = LocalTypography.current.h4,
                             color = LocalCustomColor.current.textColor
                         )
                     },
@@ -487,7 +489,7 @@ fun SwipeableListItem(
                     resetSwipeState()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF44336)
+                    containerColor = LocalCustomColor.current.red
                 ),
                 modifier = Modifier.size(width = 66.dp, height = 44.dp),
                 shape = RoundedCornerShape(0.dp, 0.dp, 10.dp, 0.dp),

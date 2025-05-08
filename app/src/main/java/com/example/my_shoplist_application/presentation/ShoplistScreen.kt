@@ -1,6 +1,8 @@
 package com.example.my_shoplist_application.presentation
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,41 +25,32 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -64,34 +58,35 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.example.my_shoplist_application.R
 import com.example.my_shoplist_application.domain.models.Ingredients
 import com.example.my_shoplist_application.domain.models.MeasurementUnit
-import com.example.my_shoplist_application.domain.models.Shoplist
+import com.example.my_shoplist_application.domain.models.getLabel
 import com.example.my_shoplist_application.presentation.model.IngredientListState
-import com.example.my_shoplist_application.presentation.model.IngredientListState.SortOrder
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenEvent
 import com.example.my_shoplist_application.presentation.ui.theme.LocalCustomColor
 import com.example.my_shoplist_application.presentation.ui.theme.LocalTypography
@@ -103,7 +98,8 @@ import org.koin.androidx.compose.koinViewModel
 fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
     val viewModel: ShoplistScreenViewModel = koinViewModel()
     val stateIngredient by viewModel.stateIngredient.collectAsState()
-    val shoplist by viewModel.shoplist.collectAsState()
+    val shopList by viewModel.shoplist.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(listId) {
         viewModel.getShoppingListById(listId)
@@ -116,7 +112,12 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(LocalCustomColor.current.background),
                 modifier = Modifier.fillMaxWidth(),
-                title = { Text(shoplist?.shoplistName.toString()) },
+                title = {
+                    Text(
+                        shopList?.shoplistName.toString(),
+                        style = LocalTypography.current.h2
+                    )
+                },
 
                 navigationIcon = {
                     Row(
@@ -127,7 +128,7 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.arrowback),
-                            contentDescription = stringResource(R.string.back),
+                            contentDescription = null,
                             tint = LocalCustomColor.current.blueColor
                         )
                         Spacer(modifier = Modifier.width(5.dp))
@@ -174,18 +175,25 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                 },
             )
         },
-        floatingActionButton = {// кнопка добавить снизу
+        floatingActionButton = {
             FloatingActionButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp),
-                onClick = { /*viewModel.showDialog()*//*Открыть экран*/ },
+                onClick = {
+                    if (stateIngredient.showAddPanel) {
+                        viewModel.obtainEvent(ShoplistScreenEvent.OnAddingIngredientBtnClick)
+                    } else if (stateIngredient.isAllChecked) {
+                        viewModel.obtainEvent(ShoplistScreenEvent.OnDeleteBtnInContextMenuClick)
+
+                    }
+                },
                 elevation = FloatingActionButtonDefaults.elevation(0.dp),
-                containerColor = LocalCustomColor.current.grey
+                containerColor = if (stateIngredient.showAddPanel || stateIngredient.isAllChecked) LocalCustomColor.current.blueColor else LocalCustomColor.current.grey
             ) {
                 Text(
-                    "Все в корзине",
-                    color = LocalCustomColor.current.textColorWhiteGrey,
+                    text = if (stateIngredient.showAddPanel) "Готово" else "Все в корзине",
+                    color = if (stateIngredient.showAddPanel || stateIngredient.isAllChecked) LocalCustomColor.current.textColorWhiteBlue else LocalCustomColor.current.textColorWhiteGrey,
                     style = LocalTypography.current.h2
                 )
             }
@@ -195,6 +203,8 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
 
         Box(modifier = Modifier.padding(padding)) {
             ShowIngridientList(
+                context = context,
+                viewModel,
                 state = stateIngredient,
                 onDelete = {
                     viewModel.obtainEvent(
@@ -203,34 +213,29 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                         )
                     )
                 },
-                onTogglePurchased = {
-                    shoplist?.let { shopList ->
-                        viewModel.obtainEvent(
-                            ShoplistScreenEvent.OnIsBoughtIngredientClick(it, shopList)
+                onUpdateBough = {
+                    viewModel.obtainEvent(
+                        ShoplistScreenEvent.OnUpdateBoughtIngredientClick(
+                            it
                         )
-                    }
+                    )
                 },
-                onClick = {viewModel.obtainEvent(ShoplistScreenEvent.ShowDialogAddIngredient)},
+                onClick = { viewModel.obtainEvent(ShoplistScreenEvent.ShowAddPanel) },
+                onItemNameChange = { viewModel.obtainEvent(ShoplistScreenEvent.UpdateItemName(it)) },
+                onSuggestionSelected = { suggestion ->
+                    viewModel.obtainEvent(
+                        ShoplistScreenEvent.UpdateItemName(
+                            suggestion
+                        )
+                    )
+                },
+                onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideAddPanel) },
             )
-
-            if (stateIngredient.showDialogAddIngredient) {
-                DialogAddProduct(
-                    newItemName = stateIngredient.newItemName,
-                    onItemNameChange = { viewModel.obtainEvent(ShoplistScreenEvent.UpdateItemName(it)) },
-                    suggestions = stateIngredient.suggestions,
-                    onSuggestionSelected = { suggestion ->
-                        viewModel.obtainEvent(ShoplistScreenEvent.UpdateItemName(suggestion))
-                    },
-                    onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideDialogAddIngredient) },
-                    viewModel,
-                    shoplist,
-                )
-            }
 
             if (stateIngredient.showContextMenu) {
                 ContextMenu(
                     position = stateIngredient.contextMenuPosition,
-                    onSorting = {},
+                    onSorting = { viewModel.obtainEvent(ShoplistScreenEvent.OnSortBtnInContextMenuClick) },
                     onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideContextMenu) },
                     onClear = { viewModel.obtainEvent(ShoplistScreenEvent.OnDeleteBtnInContextMenuClick) }
                 )
@@ -240,214 +245,298 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
     }
 }
 
-@Composable
-fun DialogAddProduct(
-    newItemName: String,
-    onItemNameChange: (String) -> Unit,
-    suggestions: List<String>,
-    onSuggestionSelected: (String) -> Unit,
-    onDismiss: () -> Unit,
-    viewModel: ShoplistScreenViewModel,
-    shoplist: Shoplist?
-) {
-    var newItemQuantity by remember { mutableStateOf("") }
-    var newItemUnit by remember { mutableStateOf(MeasurementUnit.PCS) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Создать новый список", style = LocalTypography.current.h3) },
-        text = {
-            Column {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    var expanded by remember { mutableStateOf(false) }
-                    var textFieldWidth by remember { mutableStateOf(0) }
-                    OutlinedTextField(
-                        value = newItemName,
-                        onValueChange = {
-                            onItemNameChange(it)
-                            expanded = it.isNotEmpty() && suggestions.isNotEmpty()
-                        },
-                        label = { Text("Название списка", style = LocalTypography.current.h3) },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onGloballyPositioned { coordinate ->
-                                textFieldWidth = coordinate.size.width
-                            },
-                        textStyle = LocalTypography.current.h3,
-                        trailingIcon = {
-                            Icon(
-                                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                Modifier.clickable { expanded = !expanded }
-                            )
-                        }
-                    )
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        properties = PopupProperties(focusable = false),
-                        modifier = Modifier.width(with(LocalDensity.current) { textFieldWidth.toDp() })
-                    ) {
-                        suggestions.take(5).forEach { suggestion ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    onSuggestionSelected(suggestion)
-                                    expanded = false
-                                },
-                                text = {
-                                    Text(text = suggestion)
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Row {
-                    OutlinedTextField(
-                        value = newItemQuantity,
-                        onValueChange = { newItemQuantity = it },
-                        label = { Text("Количество") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Box(Modifier.weight(1F)) {
-                        var expanded by remember { mutableStateOf(false) }
-                        OutlinedTextField(
-                            value = newItemUnit.label,
-                            onValueChange = { },
-                            readOnly = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp),
-                            trailingIcon = {
-                                IconButton(onClick = { expanded = !expanded }) {
-                                    Icon(Icons.Default.ArrowDropDown, null)
-                                }
-                            }
-                        )
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            MeasurementUnit.values().forEach { unit ->
-                                DropdownMenuItem(
-                                    text = { Text(unit.label) },
-                                    onClick = {
-                                        newItemUnit = unit
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        },
-
-        // Поле для ввода количества
-        confirmButton = {
-            Button(
-                onClick = {
-                    val quantityFloat = newItemQuantity.toFloatOrNull()
-                    if (newItemName.isNotBlank() && quantityFloat != null) {
-                        viewModel.obtainEvent(
-                            ShoplistScreenEvent.OnAddingIngredientBtnClick(
-                                newItemName,
-                                newItemQuantity.toFloat(),
-                                newItemUnit,
-                                listId = shoplist?.id
-                            )
-                        )
-                        onItemNameChange("")
-                        newItemQuantity = ""
-                        viewModel.obtainEvent(ShoplistScreenEvent.HideDialogAddIngredient)
-                    }
-                }
-            ) {
-                Text("Создать", style = LocalTypography.current.h3)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Отмена", style = LocalTypography.current.h3)
-            }
-        }
-    )
-}
-
-
 // Показать список
 @Composable
 fun ShowIngridientList(
+    context: Context,
+    viewModel: ShoplistScreenViewModel,
     state: IngredientListState,
     onDelete: (Ingredients) -> Unit,
-    onTogglePurchased: (Ingredients) -> Unit,
+    onUpdateBough: (Ingredients) -> Unit,
     onClick: () -> Unit,
-) {
-    var showDialog by remember { mutableStateOf(false) }
-    var selectedList by remember { mutableStateOf<Shoplist?>(null) }
+    onItemNameChange: (String) -> Unit,
+    onSuggestionSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
 
-    //   Функция для открытия диалога
-    val openDialog: (Shoplist) -> Unit = { list ->
-        selectedList = list
-        showDialog = true
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        SwitchWithText(false) { /*isChecked -> viewModel.switch(isChecked) */}
 
-        LazyColumn {
-            items(state.ingredients, key = { it.id }) { item ->
-                SwipeableItem(
-                    item = item,
-                    onDelete = { onDelete(item) },
-                    onClick = {},
-                    onTogglePurchased = { onTogglePurchased(item) }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            SwitchWithText(state.isAllChecked) { isChecked ->
+                viewModel.obtainEvent(
+                    ShoplistScreenEvent.OnUpdateAllBoughtIngredientClick(isChecked)
                 )
-                HorizontalDivider(Modifier.padding(start = 64.dp))
+            }
+            Box(modifier = Modifier.fillMaxWidth()) {
+
+                PanelAddUp(
+                    state = state,
+                    onItemNameChange = onItemNameChange,
+                    onSuggestionSelected = onSuggestionSelected,
+                    onDismiss = onDismiss
+                )
+            }
+
+            LazyColumn {
+                items(state.ingredients.reversed(), key = { it.id }) { item ->
+                    SwipeableItem(
+                        context = context,
+                        item = item,
+                        onDelete = { onDelete(item) },
+                        onClick = { },
+                        onUpdateBough = { onUpdateBough(item) }
+                    )
+                    HorizontalDivider(Modifier.padding(start = 64.dp))
+                }
+            }
+
+            if (!state.showAddPanel) {
+                TextButton(
+                    modifier = Modifier.align(Alignment.Start),
+                    onClick = onClick,
+                ) {
+                    Text(
+                        stringResource(R.string.add_ingredient),
+                        Modifier.padding(start = 16.dp, top = 20.dp),
+                        style = LocalTypography.current.h3,
+                        color = LocalCustomColor.current.blueColor
+                    )
+                }
             }
         }
 
-        TextButton(
-            modifier = Modifier.align(Alignment.Start),
-            onClick = onClick,
+        if (state.showAddPanel) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(LocalCustomColor.current.background)
+                    .padding(bottom = 98.dp, top = 8.dp, start = 16.dp, end = 16.dp)
+            ) {
+                PanelAddDown(viewModel = viewModel, state = state, context = context)
+
+            }
+        }
+
+    }
+}
+
+// Поле для ввода названия ингредиента
+@Composable
+fun PanelAddUp(
+    state: IngredientListState,
+    onItemNameChange: (String) -> Unit,
+    onSuggestionSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    if (state.showAddPanel) {
+        var expanded by remember { mutableStateOf(false) }
+        var textFieldWidth by remember { mutableStateOf(0) }
+        val focusRequester = remember { FocusRequester() }
+Column {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            modifier = Modifier.scale(1.3f),
+            onCheckedChange = { },
+            checked = false,
+        )
+
+        TextField(
+            value = state.newItemName,
+            onValueChange = {
+                onItemNameChange(it)
+                expanded = it.isNotEmpty() && state.suggestions.isNotEmpty()
+            },
+            label = {
+                Text(
+                    stringResource(R.string.name_ingredient),
+                    color = LocalCustomColor.current.textColorCrossed
+                )
+            },
+            singleLine = true,
+            modifier = Modifier
+                .padding(start = 2.dp)
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onGloballyPositioned { coordinate ->
+                    textFieldWidth = coordinate.size.width
+                },
+            textStyle = LocalTypography.current.h3,
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    Modifier.clickable { onDismiss() },
+                    tint = LocalCustomColor.current.grey
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,      // Черта снизу при фокусе
+                unfocusedIndicatorColor = Color.Transparent,    // Черта снизу без фокуса
+                disabledIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Red,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                errorContainerColor = Color.Transparent
+            )
+        )
+
+        DropdownMenu(
+            shadowElevation = 0.dp,
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            properties = PopupProperties(focusable = false),
+            modifier = Modifier.width(with(LocalDensity.current) { textFieldWidth.toDp() }),
+            containerColor = LocalCustomColor.current.background
         ) {
-            Text(
-                "Добавить продукт",
-                Modifier.padding(start = 16.dp, top = 20.dp),
-                style = LocalTypography.current.h3,
-                color = LocalCustomColor.current.blueColor
+            state.suggestions.take(5).forEach { suggestion ->
+                DropdownMenuItem(
+                    onClick = {
+                        onSuggestionSelected(suggestion)
+                        expanded = false
+                    },
+                    text = {
+                        Text(text = suggestion)
+                    }
+                )
+            }
+        }
+
+        LaunchedEffect(state.showAddPanel) {
+            if (state.showAddPanel) {
+                focusRequester.requestFocus()
+            }
+        }
+    }
+    HorizontalDivider(Modifier.padding(start = 64.dp))
+
+}
+    }
+}
+
+// Нижняя панель добавления ингредиентов
+@Composable
+fun PanelAddDown(
+    viewModel: ShoplistScreenViewModel,
+    state: IngredientListState,
+    context: Context
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(32.dp)
+            .background(Color(0xFF9DD8EC), RoundedCornerShape(9.dp)),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        MeasurementUnit.entries.forEachIndexed { index, unit ->
+            val isSelected = unit == state.newItemUnit
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(
+                        if (isSelected) Color.White else Color.Transparent
+                    )
+                    .border(
+                        width = if (isSelected) 2.dp else 0.dp,
+                        color = if (isSelected) Color(0xFF9DD8EC) else Color.Transparent,
+                        shape = RoundedCornerShape(9.dp)
+                    )
+                    .clickable {
+                        viewModel.obtainEvent(ShoplistScreenEvent.ChangeAddUnit(unit))
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = unit.getLabel(context),
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isSelected) Color.Black else Color.White,
+                    style = LocalTypography.current.h4
+                )
+            }
+        }
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+    // Счетчик
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 15.dp)
+    ) {
+        IconButton(
+            modifier = Modifier
+                .height(50.dp)
+                .width(50.dp),
+            onClick = {
+                if (state.newItemQuantity > 1) viewModel.obtainEvent(
+                    ShoplistScreenEvent.ChangeAddQuantity(state.newItemQuantity - 1)
+                )
+            }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.button_mines),
+                contentDescription = null
+            )
+        }
+        Text(
+            "${state.newItemQuantity}",
+            modifier = Modifier.width(32.dp),
+            textAlign = TextAlign.Center,
+            style = LocalTypography.current.h3
+        )
+        IconButton(
+            modifier = Modifier
+                .height(50.dp)
+                .width(50.dp),
+            onClick = {
+                viewModel.obtainEvent(
+                    ShoplistScreenEvent.ChangeAddQuantity(
+                        state.newItemQuantity + 1
+                    )
+                )
+            }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.button_plus),
+                contentDescription = null
             )
         }
     }
+    //   Spacer(modifier = Modifier.height(8.dp))
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeableItem(
+    context: Context,
     item: Ingredients,
     onDelete: () -> Unit,
     onClick: () -> Unit,
-    onTogglePurchased: () -> Unit
+    onUpdateBough: () -> Unit
 ) {
+
     var isRevealed by remember { mutableStateOf(false) }
     var offsetX by remember { mutableFloatStateOf(0f) }
     val resetSwipeState = {
         isRevealed = false
         offsetX = 0f
     }
+
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -464,7 +553,7 @@ fun SwipeableItem(
                     resetSwipeState()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF44336)
+                    containerColor = LocalCustomColor.current.red
                 ),
                 modifier = Modifier.size(width = 143.dp, height = 44.dp),
                 shape = RoundedCornerShape(0.dp),
@@ -512,34 +601,43 @@ fun SwipeableItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
+                    modifier = Modifier.scale(1.3f),
                     checked = item.isBought,
-                    onCheckedChange = { onTogglePurchased() }
+                    onCheckedChange = { onUpdateBough() },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = LocalCustomColor.current.background,
+                        checkmarkColor = LocalCustomColor.current.checkBoxColor,
+                    )
                 )
                 Text(
-                    text = "${item.ingredientName} ", Modifier.padding(start = 16.dp),
+                    text = item.ingredientName,
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .clickable { },
                     style = LocalTypography.current.h3,
-                    color = LocalCustomColor.current.textColor,
+                    color = if (item.isBought) LocalCustomColor.current.textColorCrossed else LocalCustomColor.current.textColor,
                     textDecoration = if (item.isBought) TextDecoration.LineThrough else TextDecoration.None
                 )
+
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
                     modifier = Modifier.padding(end = 12.dp),
-                    text = " ${item.ingredientQuantity} ${item.ingredientUnit.label}",
+                    text = " ${item.ingredientQuantity} ${item.ingredientUnit.getLabel(context)}",
                     style = LocalTypography.current.h3,
                     color = LocalCustomColor.current.textColorLabe,
-                    textDecoration = if (item.isBought) TextDecoration.LineThrough else TextDecoration.None
                 )
                 // Стрелка
                 Icon(
                     painter = painterResource(R.drawable.chevron),
-                    contentDescription = "Открыть",
+                    contentDescription = null,
                     tint = Color.Gray
                 )
             }
         }
     }
 }
+
 
 @Composable
 fun SwitchWithText(
@@ -554,19 +652,27 @@ fun SwitchWithText(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Выделить все продукты",
+            text = stringResource(R.string.Select_products),
             style = LocalTypography.current.h3,
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 20.dp)
-                .weight(1f)
+                .weight(1f),
+            color = LocalCustomColor.current.textColor
         )
         Switch(
             modifier = Modifier.padding(horizontal = 16.dp),
             checked = isChecked,
             onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = LocalCustomColor.current.colorTrackTint,
+                checkedTrackColor = LocalCustomColor.current.colorTrackTintCheck,
+                uncheckedThumbColor = LocalCustomColor.current.colorTrackTint,
+                uncheckedTrackColor = LocalCustomColor.current.ucheckedTrackColor
+            )
         )
     }
 }
+
 @Composable
 fun ContextMenu(
     position: Offset,
@@ -583,26 +689,43 @@ fun ContextMenu(
             onDismissRequest = onDismiss
         ) {
             Card(
-                modifier = Modifier.width(200.dp),
-                elevation = CardDefaults.cardElevation(8.dp)
+                modifier = Modifier.width(250.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(LocalCustomColor.current.background)
             ) {
                 Column {
                     DropdownMenuItem(
-                        text = { Text("Сортировка") },
+                        text = {
+                            Text(
+                                stringResource(R.string.sorting),
+                                style = LocalTypography.current.h3
+                            )
+                        },
                         onClick = {
                             onSorting()
-                            onDismiss
+                            onDismiss()
                         },
-                        leadingIcon = { Icon(Icons.Default.Star, null) }
+                        trailingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.symbol),
+                                contentDescription = null
+                            )
+                        }
                     )
+                    HorizontalDivider()
 
                     DropdownMenuItem(
-                        text = { Text("Очистить список") },
+                        text = {
+                            Text(
+                                stringResource(R.string.clear_list),
+                                style = LocalTypography.current.h3
+                            )
+                        },
                         onClick = {
                             onClear()
                             onDismiss()
                         },
-                        leadingIcon = { Icon(Icons.Default.Clear, null) }
+                        trailingIcon = { Icon(Icons.Default.Clear, null) }
 
                     )
 
@@ -612,18 +735,7 @@ fun ContextMenu(
     }
 }
 
-// сортировка
-@Composable
-fun SortingSection(
-    currentSortOrder: SortOrder,
-    onSortOrderChange: (SortOrder) -> Unit
-) {
-    FilterChip(
-        selected = currentSortOrder == SortOrder.ALPHABETICAL,
-        onClick = { onSortOrderChange(SortOrder.ALPHABETICAL) },
-        label = { Text("По алфавиту") }
-    )
-}
+
 
 
 
