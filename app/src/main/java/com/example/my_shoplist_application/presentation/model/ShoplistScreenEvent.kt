@@ -7,7 +7,7 @@ import com.example.my_shoplist_application.domain.models.Shoplist
 
 sealed interface ShoplistScreenEvent {
     data class Default(val listId: Int) : ShoplistScreenEvent
-    data class ShowContextMenu(val position: Offset) : ShoplistScreenEvent
+    object ShowContextMenu : ShoplistScreenEvent
     object HideContextMenu : ShoplistScreenEvent
     data object OnSortBtnInContextMenuClick : ShoplistScreenEvent
     data object OnDeleteBtnInContextMenuClick : ShoplistScreenEvent

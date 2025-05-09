@@ -138,7 +138,7 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                 actions = {
                     IconButton(onClick = {
                         viewModel.obtainEvent(
-                            event = ShoplistScreenEvent.ShowContextMenu(Offset(0f, 0f))
+                            event = ShoplistScreenEvent.ShowContextMenu
                         )
                     })
                     {
@@ -178,17 +178,17 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                 onClick = {
                     if (stateIngredient.showAddPanel) {
                         viewModel.obtainEvent(ShoplistScreenEvent.OnAddingIngredientBtnClick)
-                    } else if (stateIngredient.isAllChecked) {
+                    } else if (stateIngredient.isSelectProducts) {
                         viewModel.obtainEvent(ShoplistScreenEvent.OnDeleteBtnInContextMenuClick)
 
                     }
                 },
                 elevation = FloatingActionButtonDefaults.elevation(0.dp),
-                containerColor = if (stateIngredient.showAddPanel || stateIngredient.isAllChecked) LocalCustomColor.current.buttonColorBlueWhite else LocalCustomColor.current.grey
+                containerColor = if (stateIngredient.showAddPanel || stateIngredient.isSelectProducts) LocalCustomColor.current.buttonColorBlueWhite else LocalCustomColor.current.grey
             ) {
                 Text(
                     text = if (stateIngredient.showAddPanel) "Готово" else "Все в корзине",
-                    color = if (stateIngredient.showAddPanel || stateIngredient.isAllChecked) LocalCustomColor.current.textColorWhiteBlue else LocalCustomColor.current.textColorWhiteGrey,
+                    color = if (stateIngredient.showAddPanel || stateIngredient.isSelectProducts) LocalCustomColor.current.textColorWhiteBlue else LocalCustomColor.current.textColorWhiteGrey,
                     style = LocalTypography.current.h2
                 )
             }
@@ -229,7 +229,7 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
 
             if (stateIngredient.showContextMenu) {
                 ContextMenu(
-                    position = stateIngredient.contextMenuPosition,
+                  //  position = stateIngredient.contextMenuPosition,
                     onSorting = { viewModel.obtainEvent(ShoplistScreenEvent.OnSortBtnInContextMenuClick) },
                     onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideContextMenu) },
                     onClear = { viewModel.obtainEvent(ShoplistScreenEvent.OnDeleteBtnInContextMenuClick) }
@@ -262,7 +262,7 @@ fun ShowIngridientList(
                 .padding(start = 16.dp, end = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SwitchWithText(state.isAllChecked) { isChecked ->
+            SwitchWithText(state.isSelectProducts) { isChecked ->
                 viewModel.obtainEvent(
                     ShoplistScreenEvent.OnUpdateAllBoughtIngredientClick(isChecked)
                 )
@@ -377,8 +377,8 @@ fun PanelAddUp(
                         )
                     },
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,      // Черта снизу при фокусе
-                        unfocusedIndicatorColor = Color.Transparent,    // Черта снизу без фокуса
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
                         disabledIndicatorColor = Color.Transparent,
                         errorIndicatorColor = Color.Red,
                         focusedContainerColor = Color.Transparent,
@@ -670,7 +670,6 @@ fun SwitchWithText(
 
 @Composable
 fun ContextMenu(
-    position: Offset,
     onSorting: () -> Unit,
     onDismiss: () -> Unit,
     onClear: () -> Unit

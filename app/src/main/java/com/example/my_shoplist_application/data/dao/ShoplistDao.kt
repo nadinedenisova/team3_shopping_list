@@ -32,18 +32,18 @@ interface ShoplistDao {
         isShoplistPinned: Boolean
     )
 
-    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned " +
+    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned, shoplist_is_select_products " +
             "FROM shoplist_table ORDER BY shoplist_added_at DESC")
     suspend fun getShoplists(): List<ShoplistEntity>
 
     @Query("DELETE FROM shoplist_table WHERE shoplist_id = :shoplistId")
     fun deleteShoplist(shoplistId: Int)
 
-    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned " +
+    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned, shoplist_is_select_products " +
             "FROM shoplist_table WHERE shoplist_id = :shoplistId")
     suspend fun getShoplistById(shoplistId: Int): ShoplistEntity
 
-    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned " +
+    @Query("SELECT shoplist_id, shoplist_name, shoplist_added_at, shoplist_ingredients_list, shoplist_is_pinned, shoplist_is_select_products " +
             "FROM shoplist_table WHERE shoplist_name= :shoplistName")
     suspend fun getShoplistByName(shoplistName: String): List<ShoplistEntity>
 
@@ -53,10 +53,13 @@ interface ShoplistDao {
         ingredientsIdList: String
     )
 
-    @Query("SELECT shoplist_ingredients_list FROM shoplist_table WHERE shoplist_id = :shoplistId")
-    suspend fun getShoplistIngredients(shoplistId: Int): String
+//    @Query("SELECT shoplist_ingredients_list FROM shoplist_table WHERE shoplist_id = :shoplistId")
+//    suspend fun getShoplistIngredients(shoplistId: Int): String
 
     @Insert
     suspend fun insertList(list: ShoplistEntity): Long
+
+    @Query("UPDATE shoplist_table SET shoplist_is_select_products = :isSelect WHERE shoplist_id = :shoplistId")
+    suspend fun updateIsSelectProducts(shoplistId: Int, isSelect: Boolean)
 
 }

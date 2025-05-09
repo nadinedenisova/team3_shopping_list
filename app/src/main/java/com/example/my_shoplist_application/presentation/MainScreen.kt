@@ -155,14 +155,17 @@ private fun DialogAddNameList(
                         viewModel.obtainEvent(MainScreenEvent.Default)
                         newListName = ""
                     }
-                }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LocalCustomColor.current.blueColor
+                )
             ) {
-                Text("Создать", style = LocalTypography.current.h3)
+                TextLabelWhite(stringResource(R.string.create))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Отмена", style = LocalTypography.current.h3)
+                TextLabelBlue(stringResource(R.string.cancel))
             }
         }
     )
@@ -253,15 +256,16 @@ fun ListOptionsDialog(
         Surface {
             Column(modifier = Modifier.padding(16.dp)) {
 
-                Text(text = "Выберите действие")
+                Text(text = "Выберите действие", style = LocalTypography.current.h3)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = {
-                        TextLabelTextColor(stringResource(R.string.rename_list))
+                    label = {Text(  text = stringResource(R.string.rename_list),
+                        style = LocalTypography.current.h4,
+                        color = LocalCustomColor.current.textColorCrossed)
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -417,7 +421,7 @@ private fun DeletingAlertWindow(viewModel: MainScreenViewModel, selectedListForD
                     containerColor = LocalCustomColor.current.blueColor
                 )
             ) {
-                TextLabelTextColor(stringResource(R.string.delete))
+                TextLabelWhite(stringResource(R.string.delete))
             }
         },
         dismissButton = {

@@ -14,5 +14,5 @@ data class IngredientListState(
     val contextMenuPosition: Offset = Offset.Zero,
     val editingIngredientId: Int = 0,
     val showAddPanel: Boolean = false,
-    val isAllChecked: Boolean = false
+    var isSelectProducts: Boolean = false
 )
