@@ -81,7 +81,7 @@ class ShoplistScreenViewModel(
 
             is ShoplistScreenEvent.ShowContextMenu -> {// кнопка вызова контекстного меню три точки вверху экрана
                 _state.update {
-                    it.copy(showContextMenu = true, contextMenuPosition = event.position)
+                    it.copy(showContextMenu = true)
                 }
             }
 
@@ -183,7 +183,4 @@ class ShoplistScreenViewModel(
         }
     }
 
-    private companion object {
-        const val TAG = "ShoplistScreenViewModel"
-    }
 }

@@ -138,7 +138,7 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
                 actions = {
                     IconButton(onClick = {
                         viewModel.obtainEvent(
-                            event = ShoplistScreenEvent.ShowContextMenu(Offset(0f, 0f))
+                            event = ShoplistScreenEvent.ShowContextMenu
                         )
                     })
                     {
@@ -229,7 +229,7 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
 
             if (stateIngredient.showContextMenu) {
                 ContextMenu(
-                    position = stateIngredient.contextMenuPosition,
+                  //  position = stateIngredient.contextMenuPosition,
                     onSorting = { viewModel.obtainEvent(ShoplistScreenEvent.OnSortBtnInContextMenuClick) },
                     onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideContextMenu) },
                     onClear = { viewModel.obtainEvent(ShoplistScreenEvent.OnDeleteBtnInContextMenuClick) }
@@ -670,7 +670,6 @@ fun SwitchWithText(
 
 @Composable
 fun ContextMenu(
-    position: Offset,
     onSorting: () -> Unit,
     onDismiss: () -> Unit,
     onClear: () -> Unit
