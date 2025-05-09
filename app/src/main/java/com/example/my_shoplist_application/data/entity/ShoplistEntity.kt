@@ -3,7 +3,6 @@ package com.example.my_shoplist_application.data.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.my_shoplist_application.domain.models.Ingredients
 
 @Entity(tableName = "shoplist_table")
 data class ShoplistEntity(
@@ -15,7 +14,7 @@ data class ShoplistEntity(
     @ColumnInfo(name = "shoplist_added_at")
     val addedAt: String,
     @ColumnInfo(name = "shoplist_ingredients_list")
-    val ingredientsList: MutableList<Ingredients>,
+    val ingredientIdsList: String,
     @ColumnInfo(name = "shoplist_is_pinned")
     var isPinned: Boolean
 )

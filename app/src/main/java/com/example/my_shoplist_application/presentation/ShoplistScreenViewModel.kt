@@ -32,11 +32,62 @@ class ShoplistScreenViewModel(private val shoplistScreenInteractor: ShoplistScre
             is ShoplistScreenEvent.OnDeleteIngredientSwipeClick -> TODO() // кнопка удаления ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
             is ShoplistScreenEvent.OnEditIngredientSwipeClick -> TODO() // кнопка редактирования ингредиента в свайп-меню (нет в фигме, есть в ТЗ)
             is ShoplistScreenEvent.OnIngredientUnitClick -> TODO() // кнопка на панели выбора единицы измерения в статусе экрана "добавление ингредиента" (после нажатия на кнопку добавить продукт)
-            is ShoplistScreenEvent.OnMinusIngredientQuantityClick -> TODO() //там же кнопка "минус количества"
-            is ShoplistScreenEvent.OnPlusIngredientQuantityClick -> TODO() //там же кнопка "плюс количества"
-            is ShoplistScreenEvent.OnReadyIngredientBtnClick -> TODO() // там же кнопка "Готово"
-            is ShoplistScreenEvent.OnIsBoughtIngredientClick -> TODO() // флажок товар "куплен" слева от ингредиента
+            is ShoplistScreenEvent.OnMinusIngredientQuantityClick -> TODO() //там же, кнопка "минус количества"
+            is ShoplistScreenEvent.OnPlusIngredientQuantityClick -> TODO() //там же, кнопка "плюс количества"
 
+            is ShoplistScreenEvent.OnReadyIngredientBtnClick -> { // там же, кнопка "Готово"
+                viewModelScope.launch(Dispatchers.IO) {
+                    runCatching {
+                        shoplistScreenInteractor.saveIngredientToDB(event.ingredient)
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "saving ingredient to DB: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
+                }
+                viewModelScope.launch(Dispatchers.IO) {
+                    runCatching {
+                        shoplistScreenInteractor.saveIngredientToShoplist(event.ingredient, event.shoplist)
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "saving ingredient to shoplist: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
+                }
+            }
+
+            is ShoplistScreenEvent.OnIsBoughtIngredientClick -> { // флажок товар "куплен" слева от ингредиента
+                viewModelScope.launch(Dispatchers.IO) {
+                    runCatching {
+                            if (event.ingredient.isBought) {
+                                event.ingredient.isBought = false
+                                shoplistScreenInteractor.makeIngredientNotBought(event.ingredient, event.shoplist)
+                            } else {
+                                event.ingredient.isBought = true
+                                shoplistScreenInteractor.makeIngredientBought(event.ingredient, event.shoplist)
+                            }
+                    }.onFailure { error ->
+                        if (error is CancellationException) {
+                            throw CancellationException()
+                        }
+                        if (BuildConfig.DEBUG) {
+                            Log.e(TAG, "making ingredient bought/not bought error: $error")
+                        } else {
+                            // Отправка логов об исключении на сервер
+                        }
+                    }
+                }
+            }
 
             is ShoplistScreenEvent.OnSaveShoplistBtnClick -> { // кнопка сохранить список внизу экрана
                 viewModelScope.launch(Dispatchers.IO) {
