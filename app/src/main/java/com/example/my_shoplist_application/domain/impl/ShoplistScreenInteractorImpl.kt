@@ -72,4 +72,8 @@ class ShoplistScreenInteractorImpl(private val shoplistScreenRepository: Shoplis
     ): Flow<List<Ingredients>> {
         return shoplistScreenRepository.updateAllBoughtStatus(listid, isBought)
     }
+
+  override suspend fun updateIsSelectProducts(listid: Int, isSelectProducts: Boolean): Flow<List<Ingredients>>{
+        return shoplistScreenRepository.updateIsSelectProducts(listid, isSelectProducts)
+    }
 }

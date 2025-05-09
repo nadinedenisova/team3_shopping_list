@@ -193,6 +193,15 @@ class ShoplistScreenRepositoryImpl(
         return list
     }
 
+    override suspend fun updateIsSelectProducts(
+        listid: Int,
+        isSelectProducts: Boolean
+    ): Flow<List<Ingredients>> {
+        appDataBase.shoplistDao().updateIsSelectProducts(listid, isSelectProducts)
+        val list = appDataBase.ingredientDao().getIngredientsListId(listid).map { it -> it.map { ingredientsDbConvertor.map(it) } }
+        return list
+    }
+
     companion object {
         private const val CREATE_CHOICE = 1
         private const val SAVE_INGREDIENT_TO_DB_CHOICE = 2

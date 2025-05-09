@@ -18,5 +18,6 @@ interface ShoplistScreenInteractor {
     suspend fun getSuggestionsByPrefix(prefix: String): List<String>
     suspend fun deleteBoughtItems()
     suspend fun updateAllBoughtStatus(listid: Int, isBought: Boolean):Flow<List<Ingredients>>
+    suspend fun updateIsSelectProducts(listid: Int, isSelectProducts: Boolean): Flow<List<Ingredients>>
 }
 

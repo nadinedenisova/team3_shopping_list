@@ -52,29 +52,61 @@ class ShoplistScreenViewModel(
             }
 
             is ShoplistScreenEvent.OnAddingIngredientBtnClick -> {// кнопка добавления нового продукта внизу экрана
-
+                val listId = shoplist.value?.id ?: 0
                 val name = _state.value.newItemName.trim()
                 if (name.isNotBlank()) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        shoplistScreenInteractor.saveIngredientToDB(
-                            Ingredients(
-                                ingredientName = name,
-                                ingredientQuantity = _state.value.newItemQuantity,
-                                ingredientUnit = _state.value.newItemUnit,
-                                shopListId = shoplist.value?.id ?: 0
+                    if (_state.value.isSelectProducts== false) {
+                        viewModelScope.launch(Dispatchers.IO) {
+                            shoplistScreenInteractor.saveIngredientToDB(
+                                Ingredients(
+                                    ingredientName = name,
+                                    ingredientQuantity = _state.value.newItemQuantity,
+                                    ingredientUnit = _state.value.newItemUnit,
+                                    shopListId = shoplist.value?.id ?: 0
+                                )
                             )
-                        )
-                        shoplistScreenInteractor.saveSuggestion(name)
-                        _state.update {
-                            it.copy(
-                                showAddPanel = false,
-                                //   showRenamePanel = false,
-                                editingIngredientId = 0,
-                                newItemName = "",
-                                newItemQuantity = 0,
-                                newItemUnit = MeasurementUnit.PCS
-                            )
+                            shoplistScreenInteractor.saveSuggestion(name)
+                            _state.update {
+                                it.copy(
+                                    showAddPanel = false,
+                                    //   showRenamePanel = false,
+                                    editingIngredientId = 0,
+                                    newItemName = "",
+                                    newItemQuantity = 0,
+                                    newItemUnit = MeasurementUnit.PCS
+                                )
+                            }
                         }
+
+                    } else {
+                        viewModelScope.launch(Dispatchers.IO) {
+                            shoplistScreenInteractor.updateIsSelectProducts(
+                                listid = listId,
+                                false
+                            )
+                            shoplistScreenInteractor.saveIngredientToDB(
+                                Ingredients(
+                                    ingredientName = name,
+                                    ingredientQuantity = _state.value.newItemQuantity,
+                                    ingredientUnit = _state.value.newItemUnit,
+                                    shopListId = shoplist.value?.id ?: 0
+                                )
+                            )
+                            shoplistScreenInteractor.saveSuggestion(name)
+                            _state.update {
+                                it.copy(
+                                    showAddPanel = false,
+                                    //   showRenamePanel = false,
+                                    editingIngredientId = 0,
+                                    newItemName = "",
+                                    newItemQuantity = 0,
+                                    newItemUnit = MeasurementUnit.PCS
+                                )
+                            }
+                            _state.update { it.copy(isSelectProducts = false) }
+                        }
+
+
                     }
                 }
             }
