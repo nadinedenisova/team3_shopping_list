@@ -72,12 +72,4 @@ class ShoplistScreenInteractorImpl(private val shoplistScreenRepository: Shoplis
     ): Flow<List<Ingredients>> {
         return shoplistScreenRepository.updateAllBoughtStatus(listid, isBought)
     }
-
-    override fun switchIsChecked(isChecked: Boolean) {
-        shoplistScreenRepository.switchIsChecked(isChecked)
-    }
-
-    override fun getSwitchStatus(): Boolean {
-        return   shoplistScreenRepository.getSwitchStatus()
-    }
 }

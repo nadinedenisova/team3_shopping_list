@@ -44,6 +44,4 @@ interface ShoplistScreenRepository {
 
     suspend fun updateAllBoughtStatus(listid: Int, isBought: Boolean): Flow<List<Ingredients>>
 
-    fun switchIsChecked(isChecked: Boolean)
-    fun getSwitchStatus(): Boolean
 }

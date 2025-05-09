@@ -4,5 +4,6 @@ data class Shoplist(
     val id: Int = 0,
     val shoplistName: String,
     val ingredientsIdList: List<Int> = emptyList<Int>(),
-    var isPinned: Boolean = false
+    var isPinned: Boolean = false,
+    var isSelectProducts: Boolean = false
 )

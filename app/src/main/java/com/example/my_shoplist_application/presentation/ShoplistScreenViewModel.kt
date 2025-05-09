@@ -3,7 +3,6 @@ package com.example.my_shoplist_application.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.domain.api.MainScreenInteractor
 import com.example.my_shoplist_application.domain.api.ShoplistScreenInteractor
 import com.example.my_shoplist_application.domain.models.Ingredients
@@ -13,11 +12,9 @@ import com.example.my_shoplist_application.presentation.model.IngredientListStat
 import com.example.my_shoplist_application.presentation.model.ShoplistScreenEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.coroutines.cancellation.CancellationException
 
 class ShoplistScreenViewModel(
     private val shoplistScreenInteractor: ShoplistScreenInteractor,
@@ -31,22 +28,13 @@ class ShoplistScreenViewModel(
     val shoplist = _shoplist.asStateFlow()
 
 
-    init {
-        getSwitchStatus()
-    }
-
     fun getShoppingListById(id: Int) {
         viewModelScope.launch {
             mainScreenInteractor.getShoplistById(id)
                 .collect { list ->
                     _shoplist.value = list
+                    _state.update { it.copy(isSelectProducts = list?.isSelectProducts == true) }
                 }
-        }
-    }
-
-    private fun getSwitchStatus() {
-        _state.update {
-            it.copy(isAllChecked = shoplistScreenInteractor.getSwitchStatus(), )
         }
     }
 
@@ -105,11 +93,13 @@ class ShoplistScreenViewModel(
 
 
             is ShoplistScreenEvent.OnDeleteBtnInContextMenuClick -> {// кнопка удаления списка в контекстном меню (нет в фигме, есть в ТЗ)
+                val listId = shoplist.value?.id ?: 0
                 viewModelScope.launch {
                     shoplistScreenInteractor.deleteBoughtItems()
+                    shoplistScreenInteractor.updateAllBoughtStatus(listId, false)
                 }
-                _state.update { it.copy(isAllChecked = false) }
-                shoplistScreenInteractor.switchIsChecked(false)
+                _state.update { it.copy(isSelectProducts = false) }
+
             }
 
             is ShoplistScreenEvent.OnSortBtnInContextMenuClick -> {// кнопка сортировки списка в алфавитном порядке в контекстном меню (нет в фигме, есть в ТЗ)
@@ -138,11 +128,10 @@ class ShoplistScreenViewModel(
             is ShoplistScreenEvent.OnUpdateAllBoughtIngredientClick -> { // все флажки товар "куплен" слева от ингредиента
                 val newValue = event.isChecked
                 val listId = shoplist.value?.id ?: 0
-                _state.update { it.copy(isAllChecked = newValue) }
+                _state.update { it.copy(isSelectProducts = newValue) }
                 viewModelScope.launch(Dispatchers.IO) {
                     shoplistScreenInteractor.updateAllBoughtStatus(listId, newValue)
                 }
-                shoplistScreenInteractor.switchIsChecked(newValue)
             }
 
             is ShoplistScreenEvent.UpdateItemName -> {// подсказка при вводе +

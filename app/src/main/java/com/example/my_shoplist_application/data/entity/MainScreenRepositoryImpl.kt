@@ -82,7 +82,8 @@ class MainScreenRepositoryImpl(
                         shoplistName = oldShoplistEntity.shoplistName,
                         ingredientIdsList = oldShoplistEntity.ingredientIdsList,
                         addedAt = oldShoplistEntity.addedAt,
-                        isPinned = oldShoplistEntity.isPinned
+                        isPinned = oldShoplistEntity.isPinned,
+                        isSelectProducts = oldShoplistEntity.isSelectProducts
                     )
                     appDataBase.shoplistDao()
                         .insertShoplist(newShopListEntity)

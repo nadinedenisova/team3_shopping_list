@@ -16,6 +16,8 @@ data class ShoplistEntity(
     @ColumnInfo(name = "shoplist_ingredients_list")
     val ingredientIdsList: String,
     @ColumnInfo(name = "shoplist_is_pinned")
-    var isPinned: Boolean
+    var isPinned: Boolean,
+    @ColumnInfo(name = "shoplist_is_select_products")
+    var isSelectProducts: Boolean
 )
 

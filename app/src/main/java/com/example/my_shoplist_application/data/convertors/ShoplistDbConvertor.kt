@@ -11,7 +11,8 @@ class ShoplistDbConvertor {
             shoplist.shoplistName,
             System.currentTimeMillis().toString(),
             shoplist.ingredientsIdList.joinToString(","),
-            shoplist.isPinned
+            shoplist.isPinned,
+            shoplist.isSelectProducts
         )
     }
 
@@ -24,7 +25,8 @@ class ShoplistDbConvertor {
             shoplist.shoplistId,
             shoplist.shoplistName,
             ingredientsList,
-            shoplist.isPinned
+            shoplist.isPinned,
+            shoplist.isSelectProducts
         )
     }
 }

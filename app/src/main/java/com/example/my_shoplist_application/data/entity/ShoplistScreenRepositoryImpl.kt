@@ -3,7 +3,6 @@ package com.example.my_shoplist_application.data.entity
 import com.example.my_shoplist_application.BuildConfig
 import com.example.my_shoplist_application.data.convertors.IngredientsDbConvertor
 import com.example.my_shoplist_application.data.convertors.ShoplistDbConvertor
-import com.example.my_shoplist_application.data.sharedManager.SharedManager
 import com.example.my_shoplist_application.db.AppDataBase
 import com.example.my_shoplist_application.domain.db.ShoplistScreenRepository
 import com.example.my_shoplist_application.domain.models.Ingredients
@@ -17,7 +16,6 @@ class ShoplistScreenRepositoryImpl(
     private val appDataBase: AppDataBase,
     private val shoplistDbConvertor: ShoplistDbConvertor,
     private val ingredientsDbConvertor: IngredientsDbConvertor,
-    private val sharedManager: SharedManager
 ) : ShoplistScreenRepository {
 
     private suspend fun interactWithDb(
@@ -190,16 +188,9 @@ class ShoplistScreenRepositoryImpl(
 
     override suspend fun updateAllBoughtStatus(listid: Int, isBought: Boolean): Flow<List<Ingredients>> {
         appDataBase.ingredientDao().updateAllBoughtStatus(listid,isBought)
+        appDataBase.shoplistDao().updateIsSelectProducts(listid, isBought)
         val list = appDataBase.ingredientDao().getIngredientsListId(listid).map { it -> it.map { ingredientsDbConvertor.map(it) } }
         return list
-    }
-
-    override fun switchIsChecked(isChecked: Boolean) {
-        sharedManager.putSwitchStatus(isChecked)
-    }
-
-    override fun getSwitchStatus(): Boolean {
-        return sharedManager.getSwitchStatus()
     }
 
     companion object {
