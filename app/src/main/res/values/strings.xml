@@ -13,4 +13,19 @@
     <string name="rename_list">Переименовать список</string>
     <string name="delete_element">Удалить элемент?</string>
     <string name="you_sure_want_delete">Вы уверены, что хотите удалить этот элемент?</string>
+    <string name="Confirm">Применить</string>
+    <string name="make_a_copy">Создать копию</string>
+    <string name="add_new_list">Создать новый список</string>
+    <string name="select_action">Выберите действие</string>
+    <string name="count">Количество</string>
+    <string name="measurement_kg">кг</string>
+    <string name="measurement_l">л</string>
+    <string name="measurement_ml">уп</string>
+    <string name="measurement_pcs">шт</string>
+    <string name="measurement_gram">г</string>
+    <string name="Select_products">Выделить все продукты</string>
+    <string name="sorting">Сортировка</string>
+    <string name="clear_list">Очистить список</string>
+    <string name="name_ingredient">Название ингредиента</string>
+    <string name="add_ingredient">Добавить продукт</string>
 </resources>
