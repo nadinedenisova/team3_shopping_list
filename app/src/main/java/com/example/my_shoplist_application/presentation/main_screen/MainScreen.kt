@@ -1,4 +1,4 @@
-package com.example.my_shoplist_application.presentation
+package com.example.my_shoplist_application.presentation.main_screen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.my_shoplist_application.R
 import com.example.my_shoplist_application.domain.models.Shoplist
+import com.example.my_shoplist_application.presentation.main_screen.MainScreenViewModel
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
 import com.example.my_shoplist_application.presentation.model.ShoppingListEvent
 import com.example.my_shoplist_application.presentation.ui.theme.LocalCustomColor
