@@ -1,4 +1,4 @@
-package com.example.my_shoplist_application.presentation
+package com.example.my_shoplist_application.presentation.main_screen
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -93,7 +93,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
 
             }.onFailure { error ->
                 if (error is CancellationException) {
-                    throw CancellationException()
+                    throw java.util.concurrent.CancellationException()
                 }
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "getting shoplist error: $error")
@@ -115,7 +115,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
 
             }.onFailure { error ->
                 if (error is CancellationException) {
-                    throw CancellationException()
+                    throw java.util.concurrent.CancellationException()
                 }
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "renaming shoplist error: $error")
@@ -135,7 +135,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                 obtainEvent(MainScreenEvent.Default)
             }.onFailure { error ->
                 if (error is CancellationException) {
-                    throw CancellationException()
+                    throw java.util.concurrent.CancellationException()
                 }
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "doubling shoplist error: $error")
@@ -155,7 +155,7 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                 obtainEvent(MainScreenEvent.Default)
             }.onFailure { error ->
                 if (error is CancellationException) {
-                    throw CancellationException()
+                    throw java.util.concurrent.CancellationException()
                 }
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "pinning/unpinning shoplist error: $error")

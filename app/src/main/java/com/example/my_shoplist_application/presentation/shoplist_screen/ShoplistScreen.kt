@@ -1,4 +1,4 @@
-package com.example.my_shoplist_application.presentation
+package com.example.my_shoplist_application.presentation.shoplist_screen
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

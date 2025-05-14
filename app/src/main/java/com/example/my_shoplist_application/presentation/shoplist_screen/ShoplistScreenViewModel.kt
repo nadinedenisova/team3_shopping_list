@@ -1,4 +1,4 @@
-package com.example.my_shoplist_application.presentation
+package com.example.my_shoplist_application.presentation.shoplist_screen
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

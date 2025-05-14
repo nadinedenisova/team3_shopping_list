@@ -1,14 +1,5 @@
 package com.example.my_shoplist_application.common.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.my_shoplist_application.presentation.MainScreen
-import com.example.my_shoplist_application.presentation.ShoplistScreen
-
 //Первая верския навигации
 //@Composable
 //fun NavGraph(
@@ -34,36 +25,7 @@ import com.example.my_shoplist_application.presentation.ShoplistScreen
 //}
 
 //Вторая версия
-@Composable
-fun NavGraph(
-) {
-    val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "shoppingList") {
-        composable("shoppingList") {
-            /*ShoppingListScreen2*/ MainScreen(
-                onListClick = {listId ->
-                    navController.navigate("previewIngredients/$listId")
-                }
-            )
-        }
-
-        composable(
-            "previewIngredients/{listId}",
-            arguments = listOf(
-                navArgument("listId") { type = NavType.IntType },
-            )
-        ) { backStackEntry ->
-            val listId = backStackEntry.arguments?.getInt("listId") ?: return@composable
-            //    val listName = backStackEntry.arguments?.getString("listName") ?: ""
-
-            ShoplistScreen(
-                listId = listId,
-                //      listName = listName,
-                onBack = { navController.popBackStack() })
-        }
-    }
-}
 
 
 
