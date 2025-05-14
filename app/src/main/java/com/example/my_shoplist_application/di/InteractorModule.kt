@@ -9,10 +9,10 @@ import org.koin.dsl.module
 val interactorModule = module {
 
     single<MainScreenInteractor> {
-        MainScreenInteractorImpl(get())
+        MainScreenInteractorImpl(mainScreenRepository = get())
     }
 
     single<ShoplistScreenInteractor> {
-        ShoplistScreenInteractorImpl(get())
+        ShoplistScreenInteractorImpl(shoplistScreenRepository = get())
     }
 }

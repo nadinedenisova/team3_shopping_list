@@ -77,6 +77,8 @@ class MainScreenViewModel(private val mainScreenInteractor: MainScreenInteractor
                         )
                     )
                 }
+                _state.update { it.copy(isDialogAddingItemVisible = false) }
+                default()
             }
         }
     }

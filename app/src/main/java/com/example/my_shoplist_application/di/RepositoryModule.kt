@@ -11,11 +11,11 @@ import org.koin.dsl.module
 val repositoryModule = module {
 
     single<MainScreenRepository> {
-        MainScreenRepositoryImpl(get(), get())
+        MainScreenRepositoryImpl(appDataBase = get(), shoplistDbConvertor = get())
     }
 
     single<ShoplistScreenRepository> {
-        ShoplistScreenRepositoryImpl(get(), get(), get())
+        ShoplistScreenRepositoryImpl(appDataBase = get(), shoplistDbConvertor = get(), ingredientsDbConvertor = get())
     }
 
     factory { IngredientsDbConvertor() }

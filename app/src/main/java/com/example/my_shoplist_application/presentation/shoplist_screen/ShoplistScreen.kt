@@ -1,4 +1,5 @@
 package com.example.my_shoplist_application.presentation.shoplist_screen
+
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -66,7 +67,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -90,10 +90,14 @@ import com.example.my_shoplist_application.presentation.model.ShoplistScreenEven
 import com.example.my_shoplist_application.presentation.ui.theme.LocalCustomColor
 import com.example.my_shoplist_application.presentation.ui.theme.LocalTypography
 import org.koin.androidx.compose.koinViewModel
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
-    val viewModel: ShoplistScreenViewModel = koinViewModel()
+fun ShoplistScreen(
+    listId: Int,
+    onBack: () -> Unit,
+    viewModel: ShoplistScreenViewModel = koinViewModel()
+) {
     val stateIngredient by viewModel.stateIngredient.collectAsState()
     val shopList by viewModel.shoplist.collectAsState()
     val context = LocalContext.current
@@ -229,7 +233,7 @@ fun ShoplistScreen(listId: Int, onBack: () -> Unit) {
 
             if (stateIngredient.showContextMenu) {
                 ContextMenu(
-                  //  position = stateIngredient.contextMenuPosition,
+                    //  position = stateIngredient.contextMenuPosition,
                     onSorting = { viewModel.obtainEvent(ShoplistScreenEvent.OnSortBtnInContextMenuClick) },
                     onDismiss = { viewModel.obtainEvent(ShoplistScreenEvent.HideContextMenu) },
                     onClear = { viewModel.obtainEvent(ShoplistScreenEvent.OnDeleteBtnInContextMenuClick) }
@@ -517,6 +521,7 @@ fun PanelAddDown(
         }
     }
 }
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeableItem(
@@ -634,6 +639,7 @@ fun SwipeableItem(
         }
     }
 }
+
 @Composable
 fun SwitchWithText(
     isChecked: Boolean,

@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.my_shoplist_application.R
 import com.example.my_shoplist_application.domain.models.Shoplist
-import com.example.my_shoplist_application.presentation.main_screen.MainScreenViewModel
 import com.example.my_shoplist_application.presentation.model.MainScreenEvent
 import com.example.my_shoplist_application.presentation.model.ShoppingListEvent
 import com.example.my_shoplist_application.presentation.ui.theme.LocalCustomColor
@@ -67,11 +66,12 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun MainScreen(
-    onListClick: (Int) -> Unit
+    onListClick: (Int) -> Unit, viewModel: MainScreenViewModel = koinViewModel()
 ) {
-    val viewModel: MainScreenViewModel = koinViewModel()
     val mainScreenState by viewModel.state.collectAsState()
     var selectedListForDelete by remember { mutableStateOf<Shoplist?>(null) }
+
+    viewModel.obtainEvent(MainScreenEvent.Default)
 
     Scaffold(
         containerColor = LocalCustomColor.current.background,
@@ -152,8 +152,6 @@ private fun DialogAddNameList(
                 onClick = {
                     if (newListName.isNotBlank()) {
                         viewModel.obtainEvent(MainScreenEvent.Add(newListName))
-                        viewModel.obtainEvent(MainScreenEvent.OnCloseAddingWindow)
-                        viewModel.obtainEvent(MainScreenEvent.Default)
                         newListName = ""
                     }
                 },
@@ -264,9 +262,12 @@ fun ListOptionsDialog(
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = {Text(  text = stringResource(R.string.rename_list),
-                        style = LocalTypography.current.h4,
-                        color = LocalCustomColor.current.textColorCrossed)
+                    label = {
+                        Text(
+                            text = stringResource(R.string.rename_list),
+                            style = LocalTypography.current.h4,
+                            color = LocalCustomColor.current.textColorCrossed
+                        )
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
