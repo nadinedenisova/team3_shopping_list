@@ -1,23 +1,24 @@
 package com.example.my_shoplist_application.presentation.model
 
+import androidx.compose.ui.geometry.Offset
 import com.example.my_shoplist_application.domain.models.Ingredients
+import com.example.my_shoplist_application.domain.models.MeasurementUnit
 import com.example.my_shoplist_application.domain.models.Shoplist
 
 sealed interface ShoplistScreenEvent {
-    data object Default : ShoplistScreenEvent
-    data object OnBackBtnClick : ShoplistScreenEvent
-    data object OnContextMenuIconClick : ShoplistScreenEvent
+    data class Default(val listId: Int) : ShoplistScreenEvent
+    object ShowContextMenu : ShoplistScreenEvent
+    object HideContextMenu : ShoplistScreenEvent
     data object OnSortBtnInContextMenuClick : ShoplistScreenEvent
-    data object OnRenameBtnInContextMenuClick : ShoplistScreenEvent
     data object OnDeleteBtnInContextMenuClick : ShoplistScreenEvent
-    data object OnClearBtnInContextMenuClick : ShoplistScreenEvent
-    class OnEditIngredientSwipeClick(val ingredientId: Int) : ShoplistScreenEvent
-    class OnDeleteIngredientSwipeClick(val ingredientId: Int) : ShoplistScreenEvent
-    class OnIsBoughtIngredientClick(val ingredientId: Int) : ShoplistScreenEvent
-    data object OnAddingIngredientBtnClick : ShoplistScreenEvent
-    class OnIngredientUnitClick(val ingredientUnit: String) : ShoplistScreenEvent
-    data object OnPlusIngredientQuantityClick : ShoplistScreenEvent
-    data object OnMinusIngredientQuantityClick : ShoplistScreenEvent
-    class OnReadyIngredientBtnClick(val ingredient: Ingredients) : ShoplistScreenEvent
-    class OnSaveShoplistBtnClick(val shoplist: Shoplist) : ShoplistScreenEvent
+    class OnDeleteIngredientSwipeClick(val ingredient: Ingredients) : ShoplistScreenEvent
+    class OnUpdateBoughtIngredientClick(val ingredient: Ingredients) : ShoplistScreenEvent
+    class OnUpdateAllBoughtIngredientClick(val isChecked: Boolean) : ShoplistScreenEvent
+    class OnUpdateIngredientClick(val ingredient: Ingredients) : ShoplistScreenEvent
+    object OnAddingIngredientBtnClick : ShoplistScreenEvent  // Добавить продукт
+    data class UpdateItemName(val text: String) : ShoplistScreenEvent
+    object ShowAddPanel: ShoplistScreenEvent
+    object HideAddPanel: ShoplistScreenEvent
+    data class ChangeAddUnit(val unit: MeasurementUnit) : ShoplistScreenEvent
+    data class ChangeAddQuantity(val quantity: Int) : ShoplistScreenEvent
 }
