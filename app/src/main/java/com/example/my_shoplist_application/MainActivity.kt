@@ -33,8 +33,6 @@ class MainActivity : ComponentActivity() {
 fun NavGraph(
     navController: NavHostController,
 ) {
-    // val navController = rememberNavController()
-
     NavHost(
         navController = navController,
         startDestination = "shoppingList",
@@ -44,17 +42,3 @@ fun NavGraph(
     }
 
 }
-
-//        composable(
-//            "previewIngredients/{listId}",
-//            arguments = listOf(
-//                navArgument("listId") { type = NavType.IntType },
-//            )
-//        ) { backStackEntry ->
-//            val listId = backStackEntry.arguments?.getInt("listId") ?: return@composable
-//            ShoplistScreen(
-//                listId = listId,
-//                onBack = { navController.popBackStack() })
-//        }
-//    }
-//}
